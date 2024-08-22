@@ -1,3 +1,5 @@
+// KUNG SAAN NAKAPLACE ANG SIDEBAR, NAVBAR NG DASHBOARD
+
 import { Routes, Route } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
@@ -16,13 +18,19 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
+
+      {/* ADMIN SIDEBAR */}
       <Sidenav
         routes={routes}
         brandImg={
           sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
         }
       />
+
+      
       <div className="p-4 xl:ml-80">
+
+        {/* DASHBOARD NAVBAR */}
         <DashboardNavbar />
         <Configurator />
         <IconButton

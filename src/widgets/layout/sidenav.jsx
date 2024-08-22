@@ -8,7 +8,12 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
-
+import {
+ 
+  Bars3Icon,
+} from "@heroicons/react/24/solid";
+import {
+} from "@/context";
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
@@ -27,13 +32,23 @@ export function Sidenav({ brandImg, brandName, routes }) {
       <div
         className={`relative`}
       >
+<IconButton
+            variant="text"
+            color="blue-gray"
+            className="grid xl:hidden"
+            onClick={() => setOpenSidenav(dispatch, !openSidenav)}
+          >
+            <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
+          </IconButton>
+        
+
         <Link to="/" className="py-6 px-8 text-center">
-          <Typography
+          {/* <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
-            {brandName}
-          </Typography>
+            MuzonEcoSave
+          </Typography> */}
         </Link>
         <IconButton
           variant="text"
@@ -97,7 +112,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
 Sidenav.defaultProps = {
   brandImg: "/img/logo-ct.png",
-  brandName: "Material Tailwind React",
+  brandName: "MuzonEcoSave",
 };
 
 Sidenav.propTypes = {
