@@ -1,13 +1,24 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { UserDashboard, Dashboard, Auth } from "@/layouts";
+import HomePage from "./pages/HomePage";
+import NotFoundPage from "./pages/404Page";
+import AuthProtectedRoute from "./router/AuthProtectedRoute";
 
 function App() {
   return (
     <Routes>
-      <Route path="/userdashboard/*" element={<UserDashboard />} />
-      <Route path="/dashboard/*" element={<Dashboard />} />
+      {/* Public Routes */}
+      <Route path="/" element={<HomePage />} />
       <Route path="/auth/*" element={<Auth />} />
-      <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
+
+      {/* Auth Routes */}
+      <Route element={<AuthProtectedRoute />}>
+        <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route path="/userdashboard/*" element={<UserDashboard />} />
+      </Route>
+
+      {/* Catch All Route */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

@@ -11,10 +11,13 @@ import {
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import { useUser } from "../context/AuthContext";
+import { FirebaseAuth } from "../firebase";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">

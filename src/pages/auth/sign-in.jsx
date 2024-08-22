@@ -5,9 +5,43 @@ import {
   Button,
   Typography,
 } from "@material-tailwind/react";
-import { Link } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
+import { Link, Navigate , useNavigate } from "react-router-dom";
+import { FirebaseAuth } from "../../firebase";
+import { useUser } from "../../context/AuthContext";
 
+export function SignIn() {
+  const navigate = useNavigate();
 
+   // If user is already logged in, redirect to home
+   const { user } = useUser();
+   if (user) return <Navigate to="/" />;
+ 
+   const [formValues, setFormValues] = useState({
+     email: "",
+     password: "",
+   });
+ 
+   const handleInputChange = (e) => {
+     setFormValues({ ...formValues, [e.target.name]: e.target.value });
+   };
+ 
+   const handleSubmit = async (e) => {
+     e.preventDefault();
+ 
+     try {
+       await signInWithEmailAndPassword(
+         FirebaseAuth,
+         formValues.email,
+         formValues.password
+       );
+       navigate("/");
+
+     } catch (error) {
+       console.error(error);
+     }
+   };
   return (
     <section className="m-8 flex gap-4">
       <div className="w-full lg:w-3/5 mt-24">
@@ -15,12 +49,15 @@ import { Link } from "react-router-dom";
           <Typography variant="h2" className="font-bold mb-4">Sign In</Typography>
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to Sign In.</Typography>
         </div>
-        <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
+        <form  onSubmit={handleSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email
             </Typography>
             <Input
+              name="email"
+              onChange={handleInputChange}
+              type="email"
               size="lg"
               placeholder="name@mail.com"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
@@ -32,6 +69,8 @@ import { Link } from "react-router-dom";
               Password
             </Typography>
             <Input
+              name="password"
+              onChange={handleInputChange}
               type="password"
               size="lg"
               placeholder="********"
@@ -59,7 +98,7 @@ import { Link } from "react-router-dom";
             }
             containerProps={{ className: "-ml-2.5" }}
           />
-          <Button className="mt-6" fullWidth>
+          <Button  type="submit"  className="mt-6" fullWidth>
             Sign In
           </Button>
 

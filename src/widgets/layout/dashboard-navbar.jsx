@@ -82,23 +82,69 @@ export function DashboardNavbar() {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
-          <Link to="/auth/sign-in">
+         
+          <Menu>
+            <MenuHandler>
             <Button
-              variant="text"
-              color="blue-gray"
-              className="hidden items-center gap-1 px-4 xl:flex normal-case"
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              Sign In
-            </Button>
-            <IconButton
-              variant="text"
-              color="blue-gray"
-              className="grid xl:hidden"
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-            </IconButton>
-          </Link>
+        variant="text"
+        color="blue-gray"
+        className="hidden items-center gap-1 px-4 xl:flex normal-case"
+      >
+        <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
+        <span className="xs:hidden">Sign In</span>
+      </Button>
+     
+              
+            </MenuHandler>
+            <MenuList className="w-max border-0">
+              <MenuItem className="flex items-center gap-3">
+          
+              <div className="grid place-items-center rounded-full bg-gradient-to-tr">
+                  <CreditCardIcon className="h-6 w-6 text-black" />
+                </div>
+                <div>
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className=" font-normal "
+                  >
+                    Profile
+                  </Typography>
+                  
+                </div>
+              </MenuItem>
+              <MenuItem className="flex items-center gap-4">
+              <div className="grid place-items-center rounded-full bg-gradient-to-tr">
+                  <CreditCardIcon className="h-6 w-6 text-black" />
+                </div>
+                <div>
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className=" font-normal "
+                  >
+                    Profile
+                  </Typography>
+                  
+                </div>
+              </MenuItem>
+              <MenuItem className="flex items-center gap-4">
+                <div className="grid place-items-center rounded-full bg-gradient-to-tr">
+                  <CreditCardIcon className="h-6 w-6 text-black" />
+                </div>
+                <div>
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className=" font-normal "
+                  >
+                    Logout
+                  </Typography>
+                  
+                </div>
+              </MenuItem>
+            </MenuList>
+          </Menu>
           <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">
