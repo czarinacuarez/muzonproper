@@ -1,6 +1,6 @@
 // KUNG SAAN NAKAPLACE ANG SIDEBAR, NAVBAR NG DASHBOARD
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route , useNavigate } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
@@ -11,11 +11,20 @@ import {
 } from "@/widgets/userlayout";
 import routes from "@/userroutes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import { useUser } from "../context/AuthContext";
+import { useState , useEffect  } from "react";
 
 export function UserDashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+  const {  user, userType , userInfo } = useUser();
+  const navigate = useNavigate();
 
+  useEffect(() => {
+   if (userType === 'admin') {
+      navigate('/dashboard/home');
+    }
+  }, [userType, navigate]);
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
 

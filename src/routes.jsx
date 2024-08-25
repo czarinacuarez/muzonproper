@@ -6,7 +6,7 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, Transactions } from "@/pages/dashboard";
+import { Home, Profile, Tables, Notifications, Transactions, Reports, RegisteredUsers } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -24,45 +24,58 @@ export const routes = [
         element: <Home />,
       },
       {
-        icon: <UserCircleIcon {...icon} />,
-        name: "profile",
-        path: "/profile",
-        element: <Profile />,
-      },
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
-        element: <Tables />,
-      },
-      {
         icon: <InformationCircleIcon {...icon} />,
-        name: "notifications",
-        path: "/notifications",
-        element: <Notifications />,
-      },
-      {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "Transactions",
+        name: "Manage Requests",
         path: "/transactions",
         element: <Transactions />,
       },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "Reports",
+        path: "/reports",
+        element: <Reports />,
+      },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "User Management",
+        path: "/registered-users",
+        element: <RegisteredUsers />,
+      },
+      // {
+      //   icon: <UserCircleIcon {...icon} />,
+      //   name: "profile",
+      //   path: "/profile",
+      //   element: <Profile />,
+      // },
+      // {
+      //   icon: <TableCellsIcon {...icon} />,
+      //   name: "tables",
+      //   path: "/tables",
+      //   element: <Tables />,
+      // },
+      // {
+      //   icon: <InformationCircleIcon {...icon} />,
+      //   name: "notifications",
+      //   path: "/notifications",
+      //   element: <Notifications />,
+      // },
+    
     ],
   },
   {
     title: "other pages",
-    layout: "",
+    layout: "auth",
     pages: [
       {
         icon: <ServerStackIcon {...icon} />,
         name: "None",
-        path: "",
+        path: "/sign-in",
         element: <SignIn />,
       },
       {
         icon: <RectangleStackIcon {...icon} />,
         name: "None",
-        path: "",
+        path: "/sign-up",
         element: <SignUp />,
       },
     ],
