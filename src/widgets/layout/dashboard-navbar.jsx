@@ -1,4 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
+import { FirebaseAuth } from "../../firebase";
 import {
   Navbar,
   Typography,
@@ -25,12 +26,14 @@ import {
   setOpenConfigurator,
   setOpenSidenav,
 } from "@/context";
+import { useUser } from "../../context/AuthContext";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
+  const { userInfo } = useUser();
 
   return (
     <Navbar
@@ -50,7 +53,6 @@ export function DashboardNavbar() {
               fixedNavbar ? "mt-1" : ""
             }`}
           >
-            <Link to={`/${layout}`}>
               <Typography
                 variant="small"
                 color="blue-gray"
@@ -58,7 +60,6 @@ export function DashboardNavbar() {
               >
                 {layout}
               </Typography>
-            </Link>
             <Typography
               variant="small"
               color="blue-gray"
@@ -91,7 +92,7 @@ export function DashboardNavbar() {
         className="hidden items-center gap-1 px-4 xl:flex normal-case"
       >
         <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-        <span className="xs:hidden">Sign In</span>
+        <span className="xs:hidden">{userInfo?.firstname}</span>
       </Button>
      
               
@@ -128,7 +129,7 @@ export function DashboardNavbar() {
                   
                 </div>
               </MenuItem>
-              <MenuItem className="flex items-center gap-4">
+              <MenuItem  onClick={() => FirebaseAuth.signOut()} className="flex items-center gap-4">
                 <div className="grid place-items-center rounded-full bg-gradient-to-tr">
                   <CreditCardIcon className="h-6 w-6 text-black" />
                 </div>

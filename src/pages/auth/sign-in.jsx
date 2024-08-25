@@ -6,17 +6,26 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useState } from "react";
+import { useState , useEffect  } from "react";
 import { Link, Navigate , useNavigate } from "react-router-dom";
-import { FirebaseAuth } from "../../firebase";
+import { FirebaseAuth, FirebaseFirestore } from "../../firebase";
 import { useUser } from "../../context/AuthContext";
+import { doc, getDoc } from 'firebase/firestore';
+
 
 export function SignIn() {
   const navigate = useNavigate();
 
-   // If user is already logged in, redirect to home
-   const { user } = useUser();
-   if (user) return <Navigate to="/" />;
+  const { userType } = useUser();
+
+  useEffect(() => {
+   if (userType === 'admin') {
+     navigate('/dashboard/home');
+   } else if (userType === 'user') {
+     navigate('/userdashboard/home');
+   }
+ }, [userType, navigate]);
+     
  
    const [formValues, setFormValues] = useState({
      email: "",
@@ -31,17 +40,17 @@ export function SignIn() {
      e.preventDefault();
  
      try {
-       await signInWithEmailAndPassword(
-         FirebaseAuth,
-         formValues.email,
-         formValues.password
-       );
-       navigate("/");
-
+      await signInWithEmailAndPassword(
+        FirebaseAuth,
+        formValues.email,
+        formValues.password
+      );
      } catch (error) {
        console.error(error);
      }
    };
+
+
   return (
     <section className="m-8 flex gap-4">
       <div className="w-full lg:w-3/5 mt-24">

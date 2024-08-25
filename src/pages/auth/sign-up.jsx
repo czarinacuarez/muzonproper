@@ -5,20 +5,30 @@ import {
   Button,
   Typography,
 } from "@material-tailwind/react";
-import { Link, Navigate } from "react-router-dom";
-import { FirebaseAuth } from "../../firebase";
+import { Link, Navigate , useNavigate} from "react-router-dom";
+import { FirebaseAuth, FirebaseFirestore} from "../../firebase";
 import { useUser } from "../../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import {  doc, setDoc } from "firebase/firestore"; 
 
 export function SignUp() {
+  const {  userType } = useUser();
+  const navigate = useNavigate();
 
-  const { user } = useUser();
-  if (user) return <Navigate to="/" />;
+  useEffect(() => {
+    if (userType === 'admin') {
+      navigate('/dashboard/home');
+    } else if (userType === 'user') {
+      navigate('/userdashboard/home');
+    }
+  }, [userType, navigate]);
 
   const [formValues, setFormValues] = useState({
     email: "",
     password: "",
+    firstname: "",
+    lastname: "",
   });
 
   const handleInputChange = (e) => {
@@ -28,11 +38,20 @@ export function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(
+      const userCredential = await createUserWithEmailAndPassword(
         FirebaseAuth,
         formValues.email,
         formValues.password
       );
+      const uid = userCredential.user.uid;
+      await setDoc(doc(FirebaseFirestore, "users", uid), {
+        firstname: formValues.firstname,
+        lastname: formValues.lastname,
+        email: formValues.email,
+        type:"user",
+      });
+
+      <Navigate to="/userdashboard/home" />;
     } catch (e) {
       alert(e.message);
     }
@@ -52,12 +71,15 @@ export function SignUp() {
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to register.</Typography>
         </div>
         <form onSubmit={handleSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="mb-3 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
             Last Name
             </Typography>
             <Input
+              name="lastname"
+              type="text"
+              onChange={handleInputChange}
               size="lg"
               placeholder="name@mail.com"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
@@ -71,6 +93,9 @@ export function SignUp() {
             First Name
             </Typography>
             <Input
+              name="firstname"
+              type="text"
+              onChange={handleInputChange}
               size="lg"
               placeholder="name@mail.com"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
@@ -79,7 +104,7 @@ export function SignUp() {
               }}
             />
           </div>
-        </div> */}
+        </div>
        
           <div className="mb-3 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
