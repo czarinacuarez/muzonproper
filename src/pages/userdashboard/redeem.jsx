@@ -25,54 +25,11 @@ import {
 import { useUser } from "../../context/AuthContext";
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-import {  collection, addDoc } from "firebase/firestore"; 
+import {  collection, addDoc, query, where, getDocs, Timestamp, serverTimestamp, onSnapshot } from "firebase/firestore"; 
 import { FirebaseStorage, FirebaseFirestore} from "../../firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"; 
 
-const TABLE_HEAD = ["Transaction", "Points", "Date", "Status", "Actions",];
- 
-const TABLE_ROWS = [
-  {
-    img: "https://docs.material-tailwind.com/img/logos/logo-spotify.svg",
-    name: "Spotify",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    status: "paid",
-
-  },
-  {
-    img: "https://docs.material-tailwind.com/img/logos/logo-amazon.svg",
-    name: "Amazon",
-    amount: "$5,000",
-    date: "Wed 1:00pm",
-    status: "paid",
- 
-  },
-  {
-    img: "https://docs.material-tailwind.com/img/logos/logo-pinterest.svg",
-    name: "Pinterest",
-    amount: "$3,400",
-    date: "Mon 7:40pm",
-    status: "pending",
- 
-  },
-  {
-    img: "https://docs.material-tailwind.com/img/logos/logo-google.svg",
-    name: "Google",
-    amount: "$1,000",
-    date: "Wed 5:00pm",
-    status: "paid",
-
-  },
-  {
-    img: "https://docs.material-tailwind.com/img/logos/logo-netflix.svg",
-    name: "netflix",
-    amount: "$14,000",
-    date: "Wed 3:30am",
-    status: "cancelled",
-   
-  },
-];
+const TABLE_HEAD = ["Document Name", "Deadline", "Date", "Status", "Actions",];
 
 
 export function Redeem() {
@@ -81,6 +38,51 @@ export function Redeem() {
   const [fileName, setFileName] = useState('');
   const [numPages, setNumPages] = useState(null);
   const [file, setFile] = useState(null);
+  const [requests, setRequests] = useState([]);
+  const [search, setSearch] = useState('');
+
+  // Filter requests based on search input
+  const filteredRequests = requests.filter(request =>
+    request.document_name.toLowerCase().includes(search.toLowerCase())
+  );
+  const formatTimestamp = (timestamp) => {
+    if (timestamp instanceof Timestamp) {
+      const date = new Date(timestamp.seconds * 1000);
+      return date.toLocaleString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true, // To use AM/PM format
+      });
+    }
+    return timestamp; // If not a Timestamp, return as is
+  };
+
+  useEffect(() => {
+    if (!user || !user.uid) return;
+    console.log(user.uid);
+    const fetchRequests = async () => {
+      try {
+        const requestsCollection = collection(FirebaseFirestore, 'requests');
+        const q = query(requestsCollection, where('user_id', '==', user.uid));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const fetchedRequests = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setRequests(fetchedRequests);
+        });
+    
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Error fetching requests:', error);
+      }
+    };
+
+    fetchRequests();
+  }, [user]);
 
   const [formValues, setFormValues] = useState({
     deadline: null,
@@ -161,13 +163,20 @@ export function Redeem() {
   
       console.log('Adding document to Firestore...');
       await addDoc(collection(FirebaseFirestore, "requests"), {
-        userid: user.uid,
-        filename: fileName,
+        user_id: user.uid,
+        document_name: fileName,
         deadline: formValues.deadline,
-        fileRef: formValues.deadline,
-        downloadUrl: downloadURL,
+        document_url: downloadURL,
+        submissionDate: serverTimestamp(),
+        status:"pending",
+        admin_decision: {
+          accepted: false,
+          rejected: false,
+          decision_date: null,
+          comments: "",
+        },
       });
-  
+      setNumPages(null)
       console.log("Document successfully written with file!");
     } catch (e) {
       console.error('Error:', e);
@@ -175,6 +184,7 @@ export function Redeem() {
     }
   };
 
+  const truncate = (str, max) => (str.length > max ? `${str.slice(0, max)}...` : str);
 
   const handleOpen = () => setOpen(!open);
 
@@ -208,10 +218,13 @@ export function Redeem() {
           </div>
           <div className="flex w-full shrink-0 gap-2 md:w-max">
             <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
+            <Input
+              label="Search"
+              icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="mb-4"
+            />
             </div>
             <Button onClick={handleOpen} className="flex items-center gap-3" size="sm">
               <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" /> Send a Request
@@ -245,7 +258,7 @@ export function Redeem() {
           </Typography>
 
           <div className="grid gap-6 mb-2">
-            <input type="file" onChange={handleFileChange} 
+            <input type="file" onChange={handleFileChange}   accept=".pdf"
         className="w-full text-gray-500 font-medium text-sm bg-gray-100 file:cursor-pointer cursor-pointer file:border-0 file:py-2 file:px-4 file:mr-4 file:bg-gray-800 file:hover:bg-gray-700 file:text-white rounded" />
         {numPages !== null && <Typography variant='medium'>Number of Pages: {numPages}</Typography>}
           </div>
@@ -274,8 +287,8 @@ export function Redeem() {
               {TABLE_HEAD.map((head) => (
                 <th
                   key={head}
-                  className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
-                >
+                  className={`border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 ${head === 'Date' ? 'hidden sm:table-cell' : ''}`}
+                  >
                   <Typography
                     variant="small"
                     color="blue-gray"
@@ -288,98 +301,94 @@ export function Redeem() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  name,
-                  amount,
-                  date,
-                  status,
-                },
-                index,
-              ) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
- 
-                return (
-                  <tr key={name}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={name}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {name}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {amount}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          size="sm"
-                          variant="ghost"
-                          value={status}
-                          color={
-                            status === "paid"
-                              ? "green"
-                              : status === "pending"
-                              ? "amber"
-                              : "red"
-                          }
-                        />
-                      </div>
-                    </td>
-                   
-                    <td className={classes}>
-                      <Tooltip content="Edit User">
-                        <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
+          {filteredRequests.map(
+            (
+              {
+                document_name,
+                document_url,
+                status,
+                deadline,
+                submissionDate,
               },
-            )}
-          </tbody>
+              index,
+            ) => {
+              const isLast = index === requests.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
+
+              return (
+                <tr key={document_url}>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-bold"
+                    >
+                      {truncate(document_name, 20)}
+                      </Typography>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {formatTimestamp(deadline)}
+                    </Typography>
+                  </td>
+                  <td className={`${classes} hidden md:table-cell`}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {formatTimestamp(submissionDate)}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <div className="w-max">
+                      <Chip
+                        size="sm"
+                        variant="ghost"
+                        value={status}
+                        color={
+                          status === "paid"
+                            ? "green"
+                            : status === "pending"
+                            ? "amber"
+                            : "red"
+                        }
+                      />
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Tooltip content="View Request">
+                      <IconButton variant="text">
+                        <PencilIcon className="h-4 w-4" />
+                      </IconButton>
+                    </Tooltip>
+                  </td>
+                </tr>
+              );
+            }
+          )}
+        </tbody>
+
         </table>
       </CardBody>
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Button variant="outlined" size="sm">
-          Previous
-        </Button>
-       
-        <Button onClick={handleDownload} variant="outlined" size="sm">
-          Next
-        </Button>
+        <Typography variant="small" color="blue-gray" className="font-normal">
+          Page 1 of 10
+        </Typography>
+        <div className="flex gap-2">
+          <Button variant="outlined" size="sm">
+            Previous
+          </Button>
+          <Button variant="outlined" size="sm">
+            Next
+          </Button>
+        </div>
       </CardFooter>
     </Card>
     </div>
