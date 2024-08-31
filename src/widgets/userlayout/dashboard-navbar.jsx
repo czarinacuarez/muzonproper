@@ -27,6 +27,7 @@ import {
   setOpenSidenav,
 } from "@/context";
 import { useUser } from "../../context/AuthContext";
+import Generateqr from "@/pages/userdashboard/Generateqr";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -75,6 +76,7 @@ export function DashboardNavbar() {
         <div className="flex items-center">
           <div className="mr-auto md:mr-4 md:w-56">
           </div>
+          <Generateqr/>
           <IconButton
             variant="text"
             color="blue-gray"
