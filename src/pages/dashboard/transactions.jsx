@@ -25,6 +25,7 @@ import {
   collection,
   query,
   onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 import { FirebaseFirestore } from "@/firebase";
 import { useNavigate } from "react-router-dom";
@@ -63,7 +64,11 @@ export function Transactions() {
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   useEffect(() => {
-    const requestsCollection = collection(FirebaseFirestore, "requests");
+    const requestsCollection = query(
+      collection(FirebaseFirestore, "requests"),
+      orderBy("submissionDate", "desc"),
+    );
+
     const usersCollection = collection(FirebaseFirestore, "users");
 
     const unsubscribeRequests = onSnapshot(
@@ -265,7 +270,7 @@ export function Transactions() {
                       <div className="flex items-center gap-3">
                         {/* Ensure userImage is available if needed */}
                         <Avatar
-                          src={request.userImage}
+                          src="/images/unknown.jpg"
                           alt={request.userName}
                           size="md"
                           className="border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
@@ -313,11 +318,13 @@ export function Transactions() {
                           variant="ghost"
                           value={request.status}
                           color={
-                            request.status === "accepted"
+                            request.status === "received"
                               ? "green"
-                              : request.status === "pending"
-                              ? "amber"
-                              : "red"
+                              : request.status === "cancelled"
+                              ? "red"
+                              : request.status === "rejected"
+                              ? "red"
+                              : "amber"
                           }
                         />
                       </div>

@@ -185,6 +185,14 @@ export function Redeem() {
           rejected: false,
           decision_date: null,
           comments: "",
+          user_received: false,
+          user_received_date: null,
+          printed: false,
+          printed_date: null,
+        },
+        user_decision: {
+          cancelled: false,
+          cancelled_date: null,
         },
       });
       setNumPages(null);
@@ -383,11 +391,13 @@ export function Redeem() {
                             variant="ghost"
                             value={status}
                             color={
-                              status === "paid"
+                              status === "accepted"
                                 ? "green"
-                                : status === "pending"
-                                ? "amber"
-                                : "red"
+                                : status === "cancelled"
+                                ? "red"
+                                : status === "rejected"
+                                ? "red"
+                                : "amber"
                             }
                           />
                         </div>

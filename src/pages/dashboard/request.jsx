@@ -29,14 +29,21 @@ import {
   PencilIcon,
 } from "@heroicons/react/24/solid";
 import { useParams } from "react-router-dom";
-import { doc, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { FirebaseFirestore } from "@/firebase";
 
 export function Request() {
   const { id } = useParams();
   const [orderData, setOrderData] = useState([]);
-  const [users, setUser] = useState(null);
+  const [users, setUsers] = useState(null);
+  const [userPoints, setUserPoints] = useState(null);
+
   const [requestsInfo, setRequests] = useState(null);
 
   function formatTimestamp(timestamp) {
@@ -54,79 +61,196 @@ export function Request() {
 
     return date.toLocaleString("en-US", options);
   }
+
+  const handleAccept = async (accept, printed, received) => {
+    try {
+      const requestsDatas = doc(FirebaseFirestore, "requests", id);
+
+      if (!accept && !printed && !received) {
+        await updateDoc(requestsDatas, {
+          status: "accepted",
+          "admin_decision.accepted": true,
+          "admin_decision.decision_date": serverTimestamp(),
+        });
+      } else if (accept && !printed && !received) {
+        await updateDoc(requestsDatas, {
+          status: "on pick up",
+          "admin_decision.printed": true,
+          "admin_decision.printed_date": serverTimestamp(),
+        });
+      } else if (accept && printed && !received) {
+        await updateDoc(requestsDatas, {
+          status: "received",
+          "admin_decision.user_received": true,
+          "admin_decision.user_received_date": serverTimestamp(),
+        });
+      }
+    } catch (error) {
+      console.error("Error handling request:", error);
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      const requestsDatas = doc(FirebaseFirestore, "requests", id);
+
+      await updateDoc(requestsDatas, {
+        status: "rejected",
+        "admin_decision.rejected": true,
+        "admin_decision.decision_date": serverTimestamp(),
+      });
+
+      console.log("Document updated successfully");
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  };
   function fetchOrder() {
     let unsubscribeRequest = null;
     let unsubscribeUser = null;
+    let unsubscribeUserPoints = null;
+    // Fetch request document
+    const fetchRequestData = async () => {
+      try {
+        const requestDocRef = doc(FirebaseFirestore, "requests", id);
 
-    try {
-      const requestDocRef = doc(FirebaseFirestore, "requests", id);
+        unsubscribeRequest = onSnapshot(
+          requestDocRef,
+          async (requestDocSnap) => {
+            if (requestDocSnap.exists()) {
+              const requestData = requestDocSnap.data();
+              setRequests(requestData);
 
-      unsubscribeRequest = onSnapshot(requestDocRef, (requestDocSnap) => {
-        if (requestDocSnap.exists()) {
-          const requestData = requestDocSnap.data();
-          setRequests(requestData);
+              // Fetch user document
+              const userDocRef = doc(
+                FirebaseFirestore,
+                "users",
+                requestData.user_id,
+              );
 
-          const initialData = {
-            icon: TvIcon,
-            color: "text-green-300",
-            title: "Requested to redeem reward",
-            description: requestData.submissionDate
-              ? formatTimestamp(requestData.submissionDate)
-              : "No Description",
-          };
+              unsubscribeUser = onSnapshot(userDocRef, (userDocSnap) => {
+                if (userDocSnap.exists()) {
+                  const usersData = userDocSnap.data();
+                  setUsers(usersData);
+                  updateOrderData(usersData, requestData); // Update order data once user data is available
+                } else {
+                  console.log("No such user document!");
+                }
+              });
 
-          let decisionData = [];
+              // Fetch user document
+              const userPointsDoc = doc(
+                FirebaseFirestore,
+                "userPoints",
+                requestData.user_id,
+              );
 
-          if (requestData.admin_decision.decision_date !== null) {
-            if (requestData.admin_decision.accepted) {
+              unsubscribeUserPoints = onSnapshot(
+                userPointsDoc,
+                (userDocSnap) => {
+                  if (userDocSnap.exists()) {
+                    const userPointsData = userDocSnap.data();
+                    setUserPoints(userPointsData);
+                  } else {
+                    console.log("No such user document!");
+                  }
+                },
+              );
+            } else {
+              console.log("No such request document!");
+            }
+          },
+        );
+      } catch (error) {
+        console.error("Error fetching order:", error);
+      }
+    };
+
+    // Update order data based on users and request data
+    const updateOrderData = (usersData, requestData) => {
+      if (usersData && requestData) {
+        const initialData = {
+          icon: TvIcon,
+          color: "text-green-300",
+          title: `${usersData.firstname} ${usersData.lastname} requested to redeem their request.`,
+          description: requestData.submissionDate
+            ? formatTimestamp(requestData.submissionDate)
+            : "No Description",
+        };
+
+        let decisionData = [];
+
+        if (requestData.admin_decision.decision_date !== null) {
+          if (requestData.admin_decision.accepted) {
+            decisionData.push({
+              icon: CheckCircleIcon,
+              color: "text-green-500",
+              title: "You accepted user's request.",
+              description: requestData.admin_decision.decision_date
+                ? formatTimestamp(requestData.admin_decision.decision_date)
+                : "No Decision Date",
+            });
+
+            if (requestData.admin_decision.printed) {
               decisionData.push({
                 icon: CheckCircleIcon,
                 color: "text-green-500",
-                title: "Admin Accepted Your Request",
-                description: requestData.admin_decision.decision_date
-                  ? formatTimestamp(requestData.admin_decision.decision_date)
+                title: "Document has already been printed.",
+                comments: "User has been informed for pickup",
+                description: requestData.admin_decision.printed_date
+                  ? formatTimestamp(requestData.admin_decision.printed_date)
                   : "No Decision Date",
               });
-            } else if (requestData.admin_decision.rejected) {
-              decisionData.push({
-                icon: XCircleIcon,
-                color: "text-red-500",
-                title: "Admin Rejected Your Request",
-                description: requestData.admin_decision.decision_date
-                  ? formatTimestamp(requestData.admin_decision.decision_date)
-                  : "No Decision Date",
-              });
+
+              if (requestData.admin_decision.user_received) {
+                decisionData.push({
+                  icon: CheckCircleIcon,
+                  color: "text-green-500",
+                  title: `${usersData.firstname} ${usersData.lastname} has already received their document.`,
+                  description: requestData.admin_decision.user_received_date
+                    ? formatTimestamp(
+                        requestData.admin_decision.user_received_date,
+                      )
+                    : "No Decision Date",
+                });
+              }
             }
+          } else if (requestData.admin_decision.rejected) {
+            decisionData.push({
+              icon: CheckCircleIcon,
+              color: "text-red-500",
+              title: "You rejected user's request",
+              comments: requestData.admin_decision.comments,
+              description: requestData.admin_decision.decision_date
+                ? formatTimestamp(requestData.admin_decision.decision_date)
+                : "No Decision Date",
+            });
           }
-
-          setOrderData([initialData, ...decisionData]);
-
-          const userDocRef = doc(
-            FirebaseFirestore,
-            "users",
-            requestData.user_id,
-          );
-
-          unsubscribeUser = onSnapshot(userDocRef, (userDocSnap) => {
-            if (userDocSnap.exists()) {
-              const userData = userDocSnap.data();
-              setUser(userData);
-            } else {
-              console.log("No such user document!");
-            }
-          });
-        } else {
-          console.log("No such request document!");
+        } else if (requestData.user_decision.cancelled_date !== null) {
+          if (requestData.user_decision.cancelled) {
+            decisionData.push({
+              icon: CheckCircleIcon,
+              color: "text-red-500",
+              title: `${usersData.firstname} ${usersData.lastname} has cancelled their request`,
+              description: requestData.user_decision.cancelled_date
+                ? formatTimestamp(requestData.user_decision.cancelled_date)
+                : "No Decision Date",
+            });
+          }
         }
-      });
 
-      return () => {
-        if (unsubscribeUser) unsubscribeUser();
-        if (unsubscribeRequest) unsubscribeRequest();
-      };
-    } catch (error) {
-      console.error("Error fetching order:", error);
-    }
+        setOrderData([initialData, ...decisionData]);
+      }
+    };
+
+    // Call the function to start fetching data
+    fetchRequestData();
+
+    return () => {
+      if (unsubscribeUserPoints) unsubscribeUserPoints();
+      if (unsubscribeUser) unsubscribeUser();
+      if (unsubscribeRequest) unsubscribeRequest();
+    };
   }
 
   const openDocument = (url) => {
@@ -188,7 +312,7 @@ export function Request() {
           <CardBody className=" pb-2">
             <div className="flex items-center gap-6">
               <Avatar
-                src="/img/bruce-mars.jpeg"
+                src="/images/unknown.jpg"
                 alt="bruce-mars"
                 size="xl"
                 variant="rounded"
@@ -204,7 +328,7 @@ export function Request() {
                   className="font-normal text-blue-gray-600"
                 >
                   Current Points:{" "}
-                  {users ? users.userPoints.totalPoints : "Loading..."}
+                  {userPoints ? userPoints.points : "Loading..."}
                 </Typography>
               </div>
             </div>
@@ -222,7 +346,7 @@ export function Request() {
                 </Typography>
               </CardHeader>
               <CardBody className="p-0">
-                <ul className="flex flex-col gap-4 p-0">
+                <ul className="flex flex-col gap-4 p-0 pb-3">
                   <li className="flex items-center gap-4">
                     <Typography
                       variant="small"
@@ -395,14 +519,41 @@ export function Request() {
               <button
                 class="block w-full select-none rounded-lg bg-blue-gray-900/10 px-6 py-3 text-center align-middle font-sans text-xs font-bold uppercase text-blue-gray-900 shadow-none shadow-gray-900/10 transition-all hover:scale-105 hover:shadow-none hover:shadow-gray-900/20 focus:scale-105 focus:opacity-[0.85] focus:shadow-none active:scale-100 active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                 type="button"
+                onClick={() =>
+                  handleAccept(
+                    requestsInfo?.admin_decision?.accepted,
+                    requestsInfo?.admin_decision?.printed,
+                    requestsInfo?.admin_decision?.user_received,
+                  )
+                }
+                disabled={
+                  requestsInfo?.user_decision?.cancelled_date !== null ||
+                  (requestsInfo?.admin_decision?.decision_date !== null &&
+                    requestsInfo?.admin_decision?.rejected === true) ||
+                  (requestsInfo?.admin_decision?.decision_date !== null &&
+                    requestsInfo?.admin_decision?.user_received === true)
+                }
               >
-                ACCEPT
+                {requestsInfo?.admin_decision?.printed === true
+                  ? "Document Picked Up"
+                  : requestsInfo?.admin_decision?.decision_date !== null &&
+                    requestsInfo?.admin_decision?.accepted === true
+                  ? "Document Printed"
+                  : "ACCEPT"}
               </button>
             </div>
             <div class="mb-5 pt-3">
               <button
                 class="block w-full select-none rounded-lg bg-red-800 px-6 py-3 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-none shadow-gray-900/10 transition-all hover:scale-105 hover:shadow-none hover:shadow-gray-900/20 focus:scale-105 focus:opacity-[0.85] focus:shadow-none active:scale-100 active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                 type="button"
+                disabled={
+                  requestsInfo?.user_decision?.cancelled_date !== null ||
+                  (requestsInfo?.admin_decision?.decision_date !== null &&
+                    requestsInfo?.admin_decision?.rejected === true) ||
+                  (requestsInfo?.admin_decision?.decision_date !== null &&
+                    requestsInfo?.admin_decision?.accepted === true)
+                }
+                onClick={handleReject}
               >
                 REJECT
               </button>
@@ -421,40 +572,44 @@ export function Request() {
             </Typography>
           </CardHeader>
           <CardBody className="pt-0">
-            {orderData.map(({ icon, color, title, description }, key) => (
-              <div key={title} className="flex items-start gap-4 py-3">
-                <div
-                  className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
-                    key === orderData.length - 1 ? "after:h-0" : "after:h-4/6"
-                  }`}
-                >
-                  {React.createElement(icon, {
-                    className: `!w-5 !h-5 ${color}`,
-                  })}
-                </div>
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="block font-medium"
+            {orderData.map(
+              ({ icon, color, title, description, comments }, key) => (
+                <div key={title} className="flex items-start gap-4 py-3">
+                  <div
+                    className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
+                      key === orderData.length - 1 ? "after:h-0" : "after:h-4/6"
+                    }`}
                   >
-                    {title}
-                  </Typography>
-                  <Typography
-                    as="span"
-                    variant="small"
-                    className="text-sm font-medium text-red-300"
-                  ></Typography>
-                  <Typography
-                    as="span"
-                    variant="small"
-                    className="text-xs font-medium text-blue-gray-500"
-                  >
-                    {description}
-                  </Typography>
+                    {React.createElement(icon, {
+                      className: `!w-5 !h-5 ${color}`,
+                    })}
+                  </div>
+                  <div>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="block font-medium"
+                    >
+                      {title}
+                    </Typography>
+                    <Typography
+                      as="span"
+                      variant="small"
+                      className="text-sm font-medium text-red-300"
+                    >
+                      {comments}
+                    </Typography>
+                    <Typography
+                      as="span"
+                      variant="small"
+                      className="text-xs font-medium text-blue-gray-500"
+                    >
+                      {description}
+                    </Typography>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </CardBody>
         </Card>
       </div>
