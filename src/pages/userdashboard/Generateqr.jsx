@@ -86,9 +86,9 @@ const Generateqr = () => {
       {showModal ? (
         <>
           <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-            <div className="relative w-auto my-6 mx-auto max-w-3xl">
+            <div className="relative w-auto mx-auto max-w-3xl">
               {/* Content */}
-              <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none h-3/6">
+              <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none h-3/6 z-50">
                 {/* Header */}
                 {/* <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t"> */}
                   {/* <h3 className="text-3xl font-semibold text-black mx-auto">Generate QR Code</h3> */}
@@ -113,14 +113,32 @@ const Generateqr = () => {
                           Generate QR Code
                         </button>
                       ) : (
-                        <p className='text-black text-center'>Your QR Code is ready:</p>
+                        <div className='flex justify-end'>
+                          <button
+                          className='h-6 w-6 relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-blue-gray-500 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30'
+                          type="button"
+                            onClick={() => setShowModal(false)}
+                          >
+                            <span>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                              </svg>
+                            </span>
+                          </button>
+                        </div>
                       )}
 
                       {qrcode && (
                         <>
-                          <img src={qrcode} alt="QR Code" className="mt-4" />
-                          <a href={qrcode} download="qrcode.png">
-                            <button className="bg-red-200 mt-2 p-2 text-black">Download QR Code</button>
+                          <img src={qrcode} alt="QR Code" />
+                          <a href={qrcode} download="qrcode.png" className='absolute'>
+                            <button className="relative h-6 w-6 align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-blue-gray-500 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30">
+                              <span>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                              </span>
+                            </button>
                           </a>
                         </>
                       )}
@@ -130,14 +148,15 @@ const Generateqr = () => {
                   )}
                 </div>
                 {/* Footer */}
-                <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+                <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b gap-4">
                   <button
-                    className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    className="text-red-500 background-transparent font-bold uppercase text-sm outline-none focus:outline-none ease-linear transition-all duration-150"
                     type="button"
                     onClick={() => setShowModal(false)}
                   >
                     Close
                   </button>
+
                 </div>
               </div>
             </div>
