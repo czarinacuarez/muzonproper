@@ -58,7 +58,7 @@ export function SignUp() {
   };
 
   return (
-    <section className="m-8 flex">
+    <section className="h-screen p-8 flex">
             <div className="w-2/5 h-full hidden lg:block">
         <img
           src="/img/pattern.png"

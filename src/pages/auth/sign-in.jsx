@@ -52,8 +52,8 @@ export function SignIn() {
 
 
   return (
-    <section className="m-8 flex gap-4">
-      <div className="w-full lg:w-3/5 mt-24">
+    <section className="h-screen p-8 flex gap-4">
+      <div className="w-full lg:w-3/5 mx-auto my-auto">
         <div className="text-center">
           <Typography variant="h2" className="font-bold mb-4">Sign In</Typography>
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to sign in.</Typography>
@@ -61,7 +61,7 @@ export function SignIn() {
         <form  onSubmit={handleSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              Your email
+              Email
             </Typography>
             <Input
               name="email"
