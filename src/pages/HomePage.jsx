@@ -1,11 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link , useNavigate } from "react-router-dom";
 import { useUser } from "../context/AuthContext";
 import { FirebaseAuth } from "../firebase";
-
+import { useEffect } from "react";
 const HomePage = () => {
-  const { user } = useUser();
-  console.log(user); // Debugging line
+  const { userType, user } = useUser();
+  console.log(user); 
+  const navigate = useNavigate();
 
+  useEffect(() => {
+   if (userType === 'admin') {
+     navigate('/dashboard/home');
+   } else if (userType === 'user') {
+     navigate('/userdashboard/home');
+   } else{
+    navigate('/auth/sign-in');
+   }
+ }, [userType, navigate]);
+     
   return (
     <>
       <main>

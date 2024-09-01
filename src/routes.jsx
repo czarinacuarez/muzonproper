@@ -6,7 +6,7 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, Transactions, Reports, RegisteredUsers } from "@/pages/dashboard";
+import { Home, Profile, Tables, Notifications, Transactions, Reports, RegisteredUsers, Request } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -25,8 +25,8 @@ export const routes = [
       },
       {
         icon: <InformationCircleIcon {...icon} />,
-        name: "Manage Requests",
-        path: "/transactions",
+        name: "Print Rewards",
+        path: "/print-requests",
         element: <Transactions />,
       },
       {
@@ -59,27 +59,31 @@ export const routes = [
         path: "/notifications",
         element: <Notifications />,
       },
-    
-    ],
-  },
-  {
-    title: "other pages",
-    layout: "auth",
-    pages: [
       {
-        icon: <ServerStackIcon {...icon} />,
-        name: "None",
-        path: "/sign-in",
-        element: <SignIn />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "None",
-        path: "/sign-up",
-        element: <SignUp />,
+        name: "request",
+        path: "/request/:id",
+        element: <Request />,
       },
     ],
   },
+  // {
+  //   title: "other pages",
+  //   layout: "auth",
+  //   pages: [
+  //     {
+  //       icon: <ServerStackIcon {...icon} />,
+  //       name: "None",
+  //       path: "/sign-in",
+  //       element: <SignIn />,
+  //     },
+  //     {
+  //       icon: <RectangleStackIcon {...icon} />,
+  //       name: "None",
+  //       path: "/sign-up",
+  //       element: <SignUp />,
+  //     },
+  //   ],
+  // },
 ];
 
 export default routes;
