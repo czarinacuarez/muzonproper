@@ -12,7 +12,7 @@ import { FirebaseAuth, FirebaseFirestore } from "../../firebase";
 import { useUser } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 
 export function SignUp() {
@@ -41,6 +41,8 @@ export function SignUp() {
     youth: "",
     ageGroup: "",
   });
+
+
   const handleSelectChange = (e, field) => {
     console.log(e); // Inspect what e contains
     const value = e.target ? e.target.value : e; // Fallback to e if e.target is undefined
@@ -78,6 +80,12 @@ export function SignUp() {
         province: "Bulacan",
         barangay: "Muzon Proper",
         type: "user",
+      });
+
+      await setDoc(doc(FirebaseFirestore, "userPoints", uid), {
+        user_points_id: uid,     
+        points: 0,                
+        updatedAt: serverTimestamp(),
       });
 
       <Navigate to="/userdashboard/home" />;

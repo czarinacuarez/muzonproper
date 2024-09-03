@@ -32,6 +32,7 @@ import { useParams } from "react-router-dom";
 import {
   doc,
   onSnapshot,
+  getDoc,
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
@@ -62,29 +63,48 @@ export function Request() {
     return date.toLocaleString("en-US", options);
   }
 
-  const handleAccept = async (accept, printed, received) => {
+  const handleAccept = async (accept, printed, received, pages) => {
     try {
       const requestsDatas = doc(FirebaseFirestore, "requests", id);
 
-      if (!accept && !printed && !received) {
-        await updateDoc(requestsDatas, {
-          status: "accepted",
-          "admin_decision.accepted": true,
-          "admin_decision.decision_date": serverTimestamp(),
-        });
-      } else if (accept && !printed && !received) {
-        await updateDoc(requestsDatas, {
-          status: "on pick up",
-          "admin_decision.printed": true,
-          "admin_decision.printed_date": serverTimestamp(),
-        });
-      } else if (accept && printed && !received) {
-        await updateDoc(requestsDatas, {
-          status: "received",
-          "admin_decision.user_received": true,
-          "admin_decision.user_received_date": serverTimestamp(),
-        });
-      }
+        if (!accept && !printed && !received) {
+          await updateDoc(requestsDatas, {
+            status: "accepted",
+            "admin_decision.accepted": true,
+            "admin_decision.decision_date": serverTimestamp(),
+          });
+        } else if (accept && !printed && !received) {
+
+            try {
+              const userPointsRef = doc(FirebaseFirestore, "userPoints", requestsInfo.user_id);
+              const userPointsSnap = await getDoc(userPointsRef);
+        
+              if (userPointsSnap.exists()) {
+                const userPoints = userPointsSnap.data().points;
+        
+                await updateDoc(userPointsRef, {
+                  points: userPoints - pages,
+                });
+              }
+              else {
+                console.error("No such user document in userPoints!");
+              }
+            } catch (error) {
+              console.error("Error handling userPoints request:", error);
+            }
+
+            await updateDoc(requestsDatas, {
+              status: "on pick up",
+              "admin_decision.printed": true,
+              "admin_decision.printed_date": serverTimestamp(),
+            });
+        } else if (accept && printed && !received) {
+          await updateDoc(requestsDatas, {
+            status: "received",
+            "admin_decision.user_received": true,
+            "admin_decision.user_received_date": serverTimestamp(),
+          });
+        }
     } catch (error) {
       console.error("Error handling request:", error);
     }
@@ -483,7 +503,7 @@ export function Request() {
                       {requestsInfo ? requestsInfo.document_name : "Loading..."}
                     </Typography>
                     <Typography className="text-xs font-normal text-blue-gray-400">
-                      5 pages
+                      {requestsInfo ? requestsInfo.pages : "Loading"} pages
                     </Typography>
                   </div>
                 </div>
@@ -524,6 +544,7 @@ export function Request() {
                     requestsInfo?.admin_decision?.accepted,
                     requestsInfo?.admin_decision?.printed,
                     requestsInfo?.admin_decision?.user_received,
+                    requestsInfo?.pages
                   )
                 }
                 disabled={
