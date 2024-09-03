@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react"; // Ensure useRef is imported
-import { PencilIcon } from "@heroicons/react/24/solid";
+import { GiftTopIcon, PencilIcon } from "@heroicons/react/24/solid";
 import {
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
@@ -222,7 +222,7 @@ export function Redeem() {
                 printed paper rewards.
               </Typography>
             </div>
-            <div className="flex w-full shrink-0 gap-2 md:w-max">
+            <div className="grid w-full shrink-0 grid-cols-1 gap-2 md:flex md:w-max">
               <div className="w-full md:w-72">
                 <Input
                   label="Search"
@@ -234,10 +234,10 @@ export function Redeem() {
               </div>
               <Button
                 onClick={handleOpen}
-                className="flex items-center gap-3"
+                className="flex w-2/5 items-center gap-3 text-center "
                 size="sm"
               >
-                <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" /> Redeem
+                <GiftTopIcon strokeWidth={2} className="h-4 w-4" /> Redeem
               </Button>
               <Dialog open={open} size="xs" handler={handleOpen}>
                 <div className="flex items-center justify-between">
