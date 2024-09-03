@@ -3,24 +3,29 @@ import {
   Input,
   Checkbox,
   Button,
+  Select,
+  Option,
   Typography,
 } from "@material-tailwind/react";
-import { Link, Navigate , useNavigate} from "react-router-dom";
-import { FirebaseAuth, FirebaseFirestore} from "../../firebase";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { FirebaseAuth, FirebaseFirestore } from "../../firebase";
 import { useUser } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import {  doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc } from "firebase/firestore";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 
 export function SignUp() {
-  const {  userType } = useUser();
+  const { userType } = useUser();
   const navigate = useNavigate();
+  const [passwordShown, setPasswordShown] = useState(false);
+  const togglePasswordVisiblity = () => setPasswordShown((cur) => !cur);
 
   useEffect(() => {
-    if (userType === 'admin') {
-      navigate('/dashboard/home');
-    } else if (userType === 'user') {
-      navigate('/userdashboard/home');
+    if (userType === "admin") {
+      navigate("/dashboard/home");
+    } else if (userType === "user") {
+      navigate("/userdashboard/home");
     }
   }, [userType, navigate]);
 
@@ -29,7 +34,21 @@ export function SignUp() {
     password: "",
     firstname: "",
     lastname: "",
+    area: "",
+    gender: "",
+    civilStatus: "",
+    phone: "",
+    youth: "",
+    ageGroup: "",
   });
+  const handleSelectChange = (e, field) => {
+    console.log(e); // Inspect what e contains
+    const value = e.target ? e.target.value : e; // Fallback to e if e.target is undefined
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      [field]: value,
+    }));
+  };
 
   const handleInputChange = (e) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value });
@@ -41,14 +60,24 @@ export function SignUp() {
       const userCredential = await createUserWithEmailAndPassword(
         FirebaseAuth,
         formValues.email,
-        formValues.password
+        formValues.password,
       );
       const uid = userCredential.user.uid;
       await setDoc(doc(FirebaseFirestore, "users", uid), {
         firstname: formValues.firstname,
         lastname: formValues.lastname,
         email: formValues.email,
-        type:"user",
+        area: formValues.area,
+        gender: formValues.gender,
+        civilStatus: formValues.civilStatus,
+        phone: formValues.phone,
+        youth: formValues.youth,
+        ageGroup: formValues.ageGroup,
+        region: "III",
+        city: "SJDM",
+        province: "Bulacan",
+        barangay: "Muzon Proper",
+        type: "user",
       });
 
       <Navigate to="/userdashboard/home" />;
@@ -58,85 +87,189 @@ export function SignUp() {
   };
 
   return (
-    <section className="h-screen p-8 flex">
-            <div className="w-2/5 h-full hidden lg:block">
+    <section className="m-8 flex">
+      <div className="hidden h-full w-2/5 lg:block">
         <img
           src="/img/pattern.png"
-          className="h-full w-full object-cover rounded-3xl"
+          className="h-full w-full rounded-3xl object-cover"
         />
       </div>
-      <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
+      <div className="flex w-full flex-col items-center justify-center lg:w-3/5">
         <div className="text-center">
-          <Typography variant="h2" className="font-bold mb-4">Join Us Today</Typography>
-          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to register.</Typography>
+          <Typography variant="h2" className="mb-4 font-bold">
+            Join Us Today
+          </Typography>
+          <Typography
+            variant="paragraph"
+            color="blue-gray"
+            className="text-lg font-normal"
+          >
+            Enter your details to register
+          </Typography>
         </div>
-        <form onSubmit={handleSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="mb-3 flex flex-col gap-6">
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-            Last Name
-            </Typography>
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto mb-2 mt-8 w-80 max-w-screen-lg lg:w-1/2"
+        >
+          <div className="mb-4 flex flex-col gap-6">
             <Input
-              name="lastname"
-              type="text"
-              onChange={handleInputChange}
-              size="lg"
-              placeholder="name@mail.com"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-          </div>
-          <div className="mb-3 flex flex-col gap-6">
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-            First Name
-            </Typography>
-            <Input
-              name="firstname"
-              type="text"
-              onChange={handleInputChange}
-              size="lg"
-              placeholder="name@mail.com"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-          </div>
-        </div>
-       
-          <div className="mb-3 flex flex-col gap-6">
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-            Email
-            </Typography>
-            <Input
+              label="Email"
               onChange={handleInputChange}
               name="email"
               type="email"
               size="lg"
-              placeholder="name@mail.com"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
+              required
             />
           </div>
-          <div className="mb-1 flex flex-col gap-6">
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-            Password
-            </Typography>
+          <div className="mb-4 flex flex-col gap-6">
             <Input
-              name="password"
-              type="password"
+              label="Password"
               onChange={handleInputChange}
+              name="password"
               size="lg"
-              placeholder="********"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
+              required
+              type={passwordShown ? "text" : "password"}
+              icon={
+                <i onClick={togglePasswordVisiblity}>
+                  {passwordShown ? (
+                    <EyeIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  )}
+                </i>
+              }
             />
+          </div>
+          <div className="mb-4 flex flex-col gap-6">
+            <Input
+              label="Phone Number"
+              onChange={handleInputChange}
+              name="phone"
+              type="tel"
+              size="lg"
+              required
+              pattern="[0-9]{11}"
+              title="Please enter an 11-digit phone number like 09566216696."
+            />
+          </div>
+          <div className="grid grid-cols-1  md:grid-cols-2  md:gap-3">
+            <div className="mb-4 flex flex-col gap-6">
+              <Input
+                label="Last Name"
+                onChange={handleInputChange}
+                name="lastname"
+                type="text"
+                size="lg"
+                required
+              />
+            </div>
+            <div className="mb-4 flex flex-col gap-6">
+              <Input
+                label="First Name"
+                onChange={handleInputChange}
+                name="firstname"
+                type="text"
+                size="lg"
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1  md:grid-cols-2  md:gap-3">
+            <div className="mb-4 flex flex-col gap-6">
+              <Select
+                value={formValues.gender}
+                onChange={(value) => handleSelectChange(value, "gender")}
+                size="lg"
+                required
+                name="gender"
+                label="Gender"
+              >
+                <Option value="female">Female</Option>
+                <Option value="male">Male</Option>
+              </Select>
+            </div>
+            <div className="mb-4 flex flex-col gap-6">
+              <Select
+                value={formValues.civilStatus}
+                onChange={(value) => handleSelectChange(value, "civilStatus")}
+                size="lg"
+                required
+                name="civilStatus"
+                label="Civil Status"
+              >
+                <Option value="single">Single</Option>
+                <Option value="married">Married</Option>
+                <Option value="widowed">Widowed</Option>
+                <Option value="separated">Separated</Option>
+                <Option value="annulled">Annulled</Option>
+                <Option value="live-in">Live-in</Option>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 md:gap-3">
+            <div className="mb-4 flex flex-col gap-6">
+              <Select
+                name="youth"
+                onChange={(value) => handleSelectChange(value, "youth")}
+                size="lg"
+                required
+                value={formValues.youth}
+                label="Youth Classification"
+              >
+                <Option value="in-school-youth">In-School Youth</Option>
+                <Option value="out-of-school-youth">Out-of-School Youth</Option>
+                <Option value="employed-youth">Employed Youth</Option>
+                <Option value="unemployed-youth">Unemployed Youth</Option>
+                <Option value="pwd">Person With Disability</Option>
+                <Option value="indigenous-people">Indigenous People</Option>
+              </Select>
+            </div>
+            <div className="mb-4 flex flex-col gap-6">
+              <Select
+                name="ageGroup"
+                value={formValues.ageGroup}
+                onChange={(value) => handleSelectChange(value, "ageGroup")}
+                size="lg"
+                required
+                label="Age Group"
+              >
+                <Option value="child-youth">Child Youth (15-17)</Option>
+                <Option value="core-youth">Core Youth (18-24)</Option>
+                <Option value="adult-youth">Adult Youth (25-30)</Option>
+              </Select>
+            </div>
+          </div>
+          <div className="mb-4 flex flex-col gap-6">
+            <Select
+              name="area"
+              onChange={(value) => handleSelectChange(value, "area")}
+              size="lg"
+              required
+              label="Area"
+            >
+              <Option value="abandoned-road">Abandoned Road</Option>
+              <Option value="amaresa-ii">Amaresa II</Option>
+              <Option value="carriedo-street">Carriedo Street</Option>
+              <Option value="francisco-homes-iii">Francisco Homes III</Option>
+              <Option value="galahapmai">Galahapmai</Option>
+              <Option value="graceville-subdivision">
+                Graceville Subdivision
+              </Option>
+              <Option value="kelsey-hills-subdivision">
+                Kelsey Hills Subdivision
+              </Option>
+              <Option value="marigold-subdivision">Marigold Subdivision</Option>
+              <Option value="mt-view-subdivision">Mt. View Subdivision</Option>
+              <Option value="noels-village-ii">Noel's Village II</Option>
+              <Option value="old-road-lingap">Old Road Lingap</Option>
+              <Option value="residencia-de-muzon">Residencia De Muzon</Option>
+              <Option value="sarmiento-homes-subdivision">
+                Sarmiento Homes Subdivision
+              </Option>
+              <Option value="zone-1">Zone 1</Option>
+              <Option value="zone-2">Zone 2</Option>
+              <Option value="zone-4">Zone 4</Option>
+            </Select>
           </div>
           {/* <Checkbox
             label={
@@ -159,7 +292,6 @@ export function SignUp() {
           <Button type="submit" className="mt-6" fullWidth>
             Register Now
           </Button>
-
           {/* <div className="space-y-4 mt-8">
             <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth>
               <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -182,12 +314,16 @@ export function SignUp() {
               <span>Sign in With Twitter</span>
             </Button>
           </div> */}
-          <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
+          <Typography
+            variant="paragraph"
+            className="mt-4 text-center font-medium text-blue-gray-500"
+          >
             Already have an account?
-            <Link to="/auth/sign-in" className="text-gray-900 ml-1">Sign in</Link>
+            <Link to="/auth/sign-in" className="ml-1 text-gray-900">
+              Sign in
+            </Link>
           </Typography>
         </form>
-
       </div>
     </section>
   );
