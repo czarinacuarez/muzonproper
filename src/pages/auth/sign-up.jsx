@@ -42,7 +42,6 @@ export function SignUp() {
     ageGroup: "",
   });
 
-
   const handleSelectChange = (e, field) => {
     console.log(e); // Inspect what e contains
     const value = e.target ? e.target.value : e; // Fallback to e if e.target is undefined
@@ -70,6 +69,7 @@ export function SignUp() {
         lastname: formValues.lastname,
         email: formValues.email,
         area: formValues.area,
+        verified: false,
         gender: formValues.gender,
         civilStatus: formValues.civilStatus,
         phone: formValues.phone,
@@ -83,8 +83,8 @@ export function SignUp() {
       });
 
       await setDoc(doc(FirebaseFirestore, "userPoints", uid), {
-        user_points_id: uid,     
-        points: 0,                
+        user_points_id: uid,
+        points: 0,
         updatedAt: serverTimestamp(),
       });
 
