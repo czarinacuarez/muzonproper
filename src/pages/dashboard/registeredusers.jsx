@@ -2,6 +2,7 @@ import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   ArrowDownTrayIcon,
+  EyeIcon,
   PencilIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/solid";
@@ -32,7 +33,7 @@ const TABS = [
   },
 ];
 
-const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
+const TABLE_HEAD = ["User", "Area", "Contact", "Youth", "Verification", ""];
 
 const TABLE_ROWS = [
   {
@@ -84,14 +85,25 @@ const TABLE_ROWS = [
 export function RegisteredUsers() {
   const [users, setUsers] = useState([]);
 
+  function convertToTitleCase(text) {
+    if (!text || text == "") {
+      return text; // Return the original text if it's null, undefined, or an empty string
+    }
+    return text
+      .split("-") // Split the string by hyphens
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
+      .join(" "); // Join the words with spaces
+  }
   useEffect(() => {
     const usersCollection = collection(FirebaseFirestore, "users");
 
     const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
-      const usersData = snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
+      const usersData = snapshot.docs
+        .map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }))
+        .filter((user) => user.type !== "admin");
       setUsers(usersData);
     });
 
@@ -205,25 +217,17 @@ export function RegisteredUsers() {
                           color="blue-gray"
                           className="font-normal"
                         >
-                          {user.email}
+                          {`${convertToTitleCase(
+                            user.area,
+                          )}, ${convertToTitleCase(user.barangay)}`}
                         </Typography>
                         <Typography
                           variant="small"
                           color="blue-gray"
                           className="font-normal opacity-70"
                         >
-                          {user.email}
+                          {`${user.city}, ${user.province}`}
                         </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={user.gender ? "male" : "female"}
-                          color={user.gender ? "green" : "blue-gray"}
-                        />
                       </div>
                     </td>
                     <td className={classes}>
@@ -232,13 +236,33 @@ export function RegisteredUsers() {
                         color="blue-gray"
                         className="font-normal"
                       >
-                        {user.ageGroup}
+                        {user.phone}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Tooltip content="Edit User">
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {convertToTitleCase(user.youth)}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <div className="w-max">
+                        <Chip
+                          variant="ghost"
+                          size="sm"
+                          value={user.verified ? "Not Verified" : "Verified"}
+                          color={user.verified ? "red" : "green"}
+                        />
+                      </div>
+                    </td>
+
+                    <td className={classes}>
+                      <Tooltip content="View User">
                         <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
+                          <EyeIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
                     </td>
