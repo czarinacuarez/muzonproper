@@ -1,6 +1,10 @@
 import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowDownTrayIcon,
+  PencilIcon,
+  UserPlusIcon,
+} from "@heroicons/react/24/solid";
 import {
   Card,
   CardHeader,
@@ -22,14 +26,6 @@ const TABS = [
   {
     label: "All",
     value: "all",
-  },
-  {
-    label: "Monitored",
-    value: "monitored",
-  },
-  {
-    label: "Unmonitored",
-    value: "unmonitored",
   },
 ];
 
@@ -104,10 +100,11 @@ export function RegisteredUsers() {
           <div className="mb-8 flex items-center justify-between gap-8">
             <div>
               <Typography variant="h5" color="blue-gray">
-                Members list
+                Users List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
-                See information about all members
+                See information about all registered users in barangay Muzon
+                Proper here.
               </Typography>
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
@@ -129,11 +126,20 @@ export function RegisteredUsers() {
                 ))}
               </TabsHeader>
             </Tabs>
-            <div className="w-full md:w-2/5">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
+            <div className="grid w-max grid-cols-1 gap-2 md:grid-cols-3">
+              <div className="md:col-span-2">
+                <div className="w-full md:w-full">
+                  <Input
+                    label="Search"
+                    icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  />
+                </div>
+              </div>
+
+              <Button className="flex w-full items-center gap-3" size="sm">
+                <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" />{" "}
+                Download
+              </Button>
             </div>
           </div>
         </CardHeader>

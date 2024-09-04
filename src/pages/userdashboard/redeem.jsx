@@ -315,7 +315,7 @@ export function Redeem() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
+        <CardBody className="overflow-x-scroll px-0">
           <table className="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
@@ -391,7 +391,7 @@ export function Redeem() {
                             variant="ghost"
                             value={status}
                             color={
-                              status === "accepted"
+                              status === "received"
                                 ? "green"
                                 : status === "cancelled"
                                 ? "red"

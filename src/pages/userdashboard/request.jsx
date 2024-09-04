@@ -61,6 +61,16 @@ export function UserRequest() {
     return date.toLocaleString("en-US", options);
   }
 
+  function convertToTitleCase(text) {
+    if (!text || text == "") {
+      return text; // Return the original text if it's null, undefined, or an empty string
+    }
+    return text
+      .split("-") // Split the string by hyphens
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
+      .join(" "); // Join the words with spaces
+  }
+
   const handleCancel = async () => {
     try {
       const requestsDatas = doc(FirebaseFirestore, "requests", id);
@@ -348,7 +358,7 @@ export function UserRequest() {
                       variant="small"
                       className="font-normal text-blue-gray-500"
                     >
-                      Female
+                      {users ? users.gender : "Loading..."}
                     </Typography>
                   </li>
 
@@ -358,14 +368,17 @@ export function UserRequest() {
                       color="blue-gray"
                       className="font-semibold capitalize"
                     >
-                      Address:
+                      Area:
                     </Typography>
                     <Typography
                       variant="small"
                       className="font-normal text-blue-gray-500"
                     >
-                      Blk 54 lot 3 Sarmiento Homes City of San Jose del Monte
-                      Bulacan
+                      {users
+                        ? `${convertToTitleCase(users.area)}, ${
+                            users.barangay
+                          }, ${users.city}, ${users.province}`
+                        : "Loading..."}
                     </Typography>
                   </li>
 
@@ -381,7 +394,7 @@ export function UserRequest() {
                       variant="small"
                       className="font-normal text-blue-gray-500"
                     >
-                      09566216696
+                      {users ? users.phone : "Loading..."}
                     </Typography>
                   </li>
 
@@ -397,7 +410,39 @@ export function UserRequest() {
                       variant="small"
                       className="font-normal text-blue-gray-500"
                     >
-                      Single
+                      {users ? users.civilStatus : "Loading..."}
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4">
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-semibold capitalize"
+                    >
+                      Youth:
+                    </Typography>
+                    <Typography
+                      variant="small"
+                      className="font-normal text-blue-gray-500"
+                    >
+                      {users ? convertToTitleCase(users.youth) : "Loading..."}
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4">
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-semibold capitalize"
+                    >
+                      Youth:
+                    </Typography>
+                    <Typography
+                      variant="small"
+                      className="font-normal text-blue-gray-500"
+                    >
+                      {users
+                        ? convertToTitleCase(users.ageGroup)
+                        : "Loading..."}
                     </Typography>
                   </li>
                 </ul>
