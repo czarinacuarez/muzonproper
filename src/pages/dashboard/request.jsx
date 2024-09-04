@@ -34,6 +34,8 @@ import {
   onSnapshot,
   getDoc,
   updateDoc,
+  addDoc,
+  collection,
   serverTimestamp,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
@@ -98,6 +100,21 @@ export function Request() {
             await updateDoc(userPointsRef, {
               points: userPoints - pages,
             });
+
+            try {
+              const historyRef = collection(
+                FirebaseFirestore,
+                "pointsReductionHistory",
+              );
+              await addDoc(historyRef, {
+                action: "Points Deduction",
+                points_deducted: pages,
+                timestamp: serverTimestamp(),
+                userId: requestsInfo.user_id,
+              });
+            } catch (error) {
+              console.error("Error handling pointsHistory request:", error);
+            }
           } else {
             console.error("No such user document in userPoints!");
           }
