@@ -5,8 +5,20 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
+  BanknotesIcon,
+  ChartBarSquareIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, Transactions, Reports, RegisteredUsers, Request } from "@/pages/dashboard";
+import {
+  Home,
+  Profile,
+  Tables,
+  Notifications,
+  Transactions,
+  Reports,
+  RegisteredUsers,
+  Request,
+} from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -24,41 +36,41 @@ export const routes = [
         element: <Home />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <BanknotesIcon {...icon} />,
         name: "Print Rewards",
         path: "/print-requests",
         element: <Transactions />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <ChartBarSquareIcon {...icon} />,
         name: "Reports",
         path: "/reports",
         element: <Reports />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <UserGroupIcon {...icon} />,
         name: "User Management",
-        path: "/registered-users",
+        path: "/users",
         element: <RegisteredUsers />,
       },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "profile",
-        path: "/profile",
-        element: <Profile />,
-      },
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
-        element: <Tables />,
-      },
-      {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "notifications",
-        path: "/notifications",
-        element: <Notifications />,
-      },
+      // {
+      //   icon: <UserCircleIcon {...icon} />,
+      //   name: "profile",
+      //   path: "/profile",
+      //   element: <Profile />,
+      // },
+      // {
+      //   icon: <TableCellsIcon {...icon} />,
+      //   name: "tables",
+      //   path: "/tables",
+      //   element: <Tables />,
+      // },
+      // {
+      //   icon: <InformationCircleIcon {...icon} />,
+      //   name: "notifications",
+      //   path: "/notifications",
+      //   element: <Notifications />,
+      // },
       {
         name: "request",
         path: "/request/:id",

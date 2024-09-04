@@ -5,8 +5,18 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
+  BanknotesIcon,
+  PrinterIcon,
 } from "@heroicons/react/24/solid";
-import { UserHome, UserProfile, UserTables, UserNotifications, Redeem, UserTransactions , UserRequest } from "@/pages/userdashboard";
+import {
+  UserHome,
+  UserProfile,
+  UserTables,
+  UserNotifications,
+  Redeem,
+  UserTransactions,
+  UserRequest,
+} from "@/pages/userdashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -19,46 +29,45 @@ export const routes = [
     pages: [
       {
         icon: <HomeIcon {...icon} />,
-        name: "dashboard",
+        name: "Home",
         path: "/home",
         element: <UserHome />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <BanknotesIcon {...icon} />,
         name: "Points & Transactions",
         path: "/transactions",
         element: <UserTransactions />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "Print Rewards",
+        icon: <PrinterIcon {...icon} />,
+        name: "Redeem Print Reward",
         path: "/print",
         element: <Redeem />,
       },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "profile",
-        path: "/profile",
-        element: <UserProfile />,
-      },
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
-        element: <UserTables />,
-      },
-      {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "notifications",
-        path: "/notifications",
-        element: <UserNotifications />,
-      },
+      // {
+      //   icon: <UserCircleIcon {...icon} />,
+      //   name: "profile",
+      //   path: "/profile",
+      //   element: <UserProfile />,
+      // },
+      // {
+      //   icon: <TableCellsIcon {...icon} />,
+      //   name: "tables",
+      //   path: "/tables",
+      //   element: <UserTables />,
+      // },
+      // {
+      //   icon: <InformationCircleIcon {...icon} />,
+      //   name: "notifications",
+      //   path: "/notifications",
+      //   element: <UserNotifications />,
+      // },
       {
         name: "request",
         path: "/request/:id",
         element: <UserRequest />,
       },
-  
     ],
   },
   // {

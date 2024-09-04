@@ -221,7 +221,7 @@ export function Transactions() {
                 rewards redeeming request.
               </Typography>
             </div>
-            <div className="flex w-full shrink-0 gap-2 md:w-max">
+            <div className="grid w-full shrink-0 grid-cols-1 gap-2 md:flex md:w-max">
               <div className="w-full md:w-72">
                 <Input
                   label="Search"
@@ -230,14 +230,14 @@ export function Transactions() {
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                 />
               </div>
-              <Button className="flex items-center gap-3" size="sm">
+              <Button className="flex w-2/5 items-center gap-3" size="sm">
                 <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" />{" "}
                 Download
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
+        <CardBody className=" overflow-x-auto px-0">
           <table className="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
