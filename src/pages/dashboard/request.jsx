@@ -107,7 +107,7 @@ export function Request() {
                 "pointsReductionHistory",
               );
               await addDoc(historyRef, {
-                action: "Points Deduction",
+                action: "Redeemed",
                 points_deducted: pages,
                 timestamp: serverTimestamp(),
                 userId: requestsInfo.user_id,

@@ -96,11 +96,11 @@ const Generateqr = () => {
       </IconButton>
       <Dialog open={open} handler={handleOpen} className='p-2'>
         <DialogHeader className='flex justify-center p-0'>User Identity</DialogHeader>
-        <DialogBody className="relative w-auto mx-auto max-w-3xl p-0">
+        <DialogBody className="relative flex justify-center w-auto max-w-3xl p-0">
           {userId ? (
             <>
               {!qrCodeGenerated ? (
-                <Button variant="gradient" color="green" onClick={handleGenerateQRCode}>
+                <Button variant="gradient" color="green" className='my-2' onClick={handleGenerateQRCode}>
                   Generate QR
                 </Button>
               ) : null}
