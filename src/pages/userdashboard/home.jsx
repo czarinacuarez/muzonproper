@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Typography,
   Card,
@@ -12,11 +12,10 @@ import {
   Avatar,
   Tooltip,
   Progress,
+  CardFooter,
+  Button,
 } from "@material-tailwind/react";
-import {
-  EllipsisVerticalIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "@/widgets/cards";
 import { StatisticsChart } from "@/widgets/charts";
 import {
@@ -25,30 +24,162 @@ import {
   projectsTableData,
   ordersOverviewData,
 } from "@/data";
-import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
-
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  EyeDropperIcon,
+  KeyIcon,
+} from "@heroicons/react/24/solid";
+import { useUser } from "@/context/AuthContext";
+import { FirebaseFirestore } from "@/firebase";
+import { collection, onSnapshot, query, where, doc } from "firebase/firestore";
+import { useEffect } from "react";
 export function UserHome() {
+  const { user } = useUser();
+  const [uid, setUid] = useState("");
+
+  const [totalBottles, setTotalBottles] = useState(0);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [currentPoints, setCurrentPoints] = useState(0);
+  const timestamp = new Date(); // Get current date and time
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "Loading...";
+
+    // Convert to Date object if it's a timestamp string or number
+    const date = new Date(timestamp);
+
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true, // Use 12-hour time format with AM/PM
+    };
+
+    return date.toLocaleString("en-US", options);
+  };
+  useEffect(() => {
+    if (user?.uid) {
+      const userId = user.uid;
+      console.log("User ID:", userId); // Check that userId is correctly retrieved
+      setUid(userId);
+      const pointsReductionRef = collection(
+        FirebaseFirestore,
+        "pointsReductionHistory",
+      );
+      const pointsReductionQuery = query(
+        pointsReductionRef,
+        where("userId", "==", userId),
+      );
+
+      const unsubscribePointsReduction = onSnapshot(
+        pointsReductionQuery,
+        (snapshot) => {
+          let points = 0;
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            points += data.points_deducted; // Adjust field name if needed
+          });
+          setTotalPoints(points);
+        },
+      );
+
+      const userPointsRef = doc(FirebaseFirestore, "userPoints", userId);
+
+      const unsubscribe = onSnapshot(userPointsRef, (doc) => {
+        const data = doc.data();
+        setCurrentPoints(data?.points || 0); // Use default value if data is not available
+      });
+
+      return () => {
+        unsubscribePointsReduction();
+        unsubscribe();
+      };
+    }
+  }, [user?.id]);
+
   return (
     <div className="mt-12">
-      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-        {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
-          <StatisticsCard
-            key={title}
-            {...rest}
-            title={title}
-            icon={React.createElement(icon, {
-              className: "w-6 h-6 text-white",
-            })}
-            footer={
-              <Typography className="font-normal text-blue-gray-600">
-                <strong className={footer.color}>{footer.value}</strong>
-                &nbsp;{footer.label}
-              </Typography>
-            }
-          />
-        ))}
+      <div className="mb-12 grid gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="border border-blue-gray-100 shadow-sm">
+          <CardHeader
+            variant="gradient"
+            color="red"
+            floated={false}
+            shadow={false}
+            className="absolute grid h-12 w-12 place-items-center"
+          >
+            <Tooltip content="Answer SK Profiling">
+              <IconButton className="bg-transparent">
+                <CheckCircleIcon className="h-6 w-6"></CheckCircleIcon>
+              </IconButton>
+            </Tooltip>
+          </CardHeader>
+          <CardBody className="p-4 text-right">
+            <Typography
+              variant="small"
+              className="font-normal text-blue-gray-600"
+            >
+              Account Status
+            </Typography>
+            <Typography variant="h4" color="red">
+              Not Verified
+            </Typography>
+          </CardBody>
+          <CardFooter className="border-t border-blue-gray-50 p-4">
+            <Typography className="font-normal text-blue-gray-600">
+              You must answer SK Profiling.{" "}
+              <strong className>Click on the check icon.</strong>
+            </Typography>
+          </CardFooter>
+        </Card>
+
+        <StatisticsCard
+          value={totalPoints}
+          title="Total Bottles Submitted"
+          color="gray"
+          icon={React.createElement(EyeDropperIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <Typography className="font-normal text-blue-gray-600">
+              <strong></strong>{" "}
+              {totalPoints > 1000
+                ? "Great job! You've redeemed over 1000 points!"
+                : "Keep going to reach more milestones!"}
+            </Typography>
+          }
+        />
+        <StatisticsCard
+          value={currentPoints}
+          title="Current Points"
+          color="gray"
+          icon={React.createElement(EyeDropperIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <div className="flex items-center justify-center">
+              <Button>Redeem Printing Rewards</Button>
+            </div>
+          }
+        />
+        <StatisticsCard
+          value={totalPoints}
+          title="Total Points Redeemed"
+          color="gray"
+          icon={React.createElement(EyeDropperIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <Typography className="font-normal text-blue-gray-600">
+              As of
+              <strong className=""> {formatTimestamp(timestamp)}</strong>
+            </Typography>
+          }
+        />
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart
             key={props.title}
@@ -58,7 +189,10 @@ export function UserHome() {
                 variant="small"
                 className="flex items-center font-normal text-blue-gray-600"
               >
-                <ClockIcon strokeWidth={2} className="h-4 w-4 text-blue-gray-400" />
+                <ClockIcon
+                  strokeWidth={2}
+                  className="h-4 w-4 text-blue-gray-400"
+                />
                 &nbsp;{props.footer}
               </Typography>
             }
@@ -66,7 +200,7 @@ export function UserHome() {
         ))}
       </div>
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="overflow-hidden xl:col-span-2 border border-blue-gray-100 shadow-sm">
+        <Card className="overflow-hidden border border-blue-gray-100 shadow-sm xl:col-span-2">
           <CardHeader
             floated={false}
             shadow={false}
@@ -81,7 +215,10 @@ export function UserHome() {
                 variant="small"
                 className="flex items-center gap-1 font-normal text-blue-gray-600"
               >
-                <CheckCircleIcon strokeWidth={3} className="h-4 w-4 text-blue-gray-200" />
+                <CheckCircleIcon
+                  strokeWidth={3}
+                  className="h-4 w-4 text-blue-gray-200"
+                />
                 <strong>30 done</strong> this month
               </Typography>
             </div>
@@ -102,7 +239,7 @@ export function UserHome() {
               </MenuList>
             </Menu>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
@@ -110,7 +247,7 @@ export function UserHome() {
                     (el) => (
                       <th
                         key={el}
-                        className="border-b border-blue-gray-50 py-3 px-6 text-left"
+                        className="border-b border-blue-gray-50 px-6 py-3 text-left"
                       >
                         <Typography
                           variant="small"
@@ -119,7 +256,7 @@ export function UserHome() {
                           {el}
                         </Typography>
                       </th>
-                    )
+                    ),
                   )}
                 </tr>
               </thead>
@@ -187,7 +324,7 @@ export function UserHome() {
                         </td>
                       </tr>
                     );
-                  }
+                  },
                 )}
               </tbody>
             </table>
@@ -246,7 +383,7 @@ export function UserHome() {
                     </Typography>
                   </div>
                 </div>
-              )
+              ),
             )}
           </CardBody>
         </Card>
