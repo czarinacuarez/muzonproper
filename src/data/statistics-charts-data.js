@@ -1,131 +1,160 @@
 import { chartsConfig } from "@/configs";
+import { fetchTransaction } from './fetchData'; 
+import { FetchRedeemedData } from './DeductionReport'; 
+import { FetchRequestFile } from './RequestFile'; 
 
-const websiteViewsChart = {
-  type: "bar",
-  height: 220,
-  series: [
-    {
-      name: "Views",
-      data: [50, 20, 10, 22, 50, 10, 40],
-    },
-  ],
-  options: {
-    ...chartsConfig,
-    colors: "#388e3c",
-    plotOptions: {
-      bar: {
-        columnWidth: "16%",
-        borderRadius: 5,
+const getWebsiteViewsChartData = async () => {
+  try {
+    const data = await fetchTransaction();
+    return data;
+  } catch (error) {
+    console.error("Error fetching chart data: ", error);
+    return [0, 0, 0, 0, 0, 0, 0]; 
+  }
+};
+
+const getRedeemedData = async () => {
+  try {
+    const redeemedData = await FetchRedeemedData();
+    return redeemedData;
+  } catch (error) {
+    console.error("Error fetching chart data: ", error);
+    return [0, 0, 0, 0, 0, 0, 0]; 
+  }
+};
+
+const getRequestsData = async () => {
+  try {
+    const requestData = await FetchRequestFile();
+    return requestData;
+  } catch (error) {
+    console.error("Error fetching chart data: ", error);
+    return [0, 0, 0, 0, 0, 0, 0]; 
+  }
+};
+
+const getWebsiteViewsChart = async () => {
+  const data = await getWebsiteViewsChartData();
+  return {
+    type: "bar",
+    height: 220,
+    series: [
+      {
+        name: "Total",
+        data: data,
+      },
+    ],
+    options: {
+      ...chartsConfig,
+      colors: "#388e3c",
+      plotOptions: {
+        bar: {
+          columnWidth: "16%",
+          borderRadius: 5,
+        },
+      },
+      xaxis: {
+        ...chartsConfig.xaxis,
+        categories: ["S", "M", "T", "W", "T", "F", "S"],
       },
     },
-    xaxis: {
-      ...chartsConfig.xaxis,
-      categories: ["M", "T", "W", "T", "F", "S", "S"],
-    },
-  },
+  };
 };
 
-const dailySalesChart = {
-  type: "line",
-  height: 220,
-  series: [
-    {
-      name: "Sales",
-      data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+const getRedeemedChart = async () => {
+  const redeemedData = await getRedeemedData();
+  return {
+    type: "line",
+    height: 220,
+    series: [
+      {
+        name: "Total",
+        data: redeemedData,
+      },
+    ],
+    options: {
+      ...chartsConfig,
+      colors: ["#0288d1"],
+      stroke: {
+        lineCap: "round",
+      },
+      markers: {
+        size: 5,
+      },
+      xaxis: {
+        ...chartsConfig.xaxis,
+        categories: ["S", "M", "T", "W", "T", "F", "S"],
+      },
     },
-  ],
-  options: {
-    ...chartsConfig,
-    colors: ["#0288d1"],
-    stroke: {
-      lineCap: "round",
-    },
-    markers: {
-      size: 5,
-    },
-    xaxis: {
-      ...chartsConfig.xaxis,
-      categories: [
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-    },
-  },
+  };
 };
 
-const completedTaskChart = {
-  type: "line",
-  height: 220,
-  series: [
-    {
-      name: "Sales",
-      data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+const getRequestChart = async () => {
+  const requestData = await getRequestsData();
+  return {
+    type: "line",
+    height: 220,
+    series: [
+      {
+        name: "Requests",
+        data: requestData
+      },
+    ],
+    options: {
+      ...chartsConfig,
+      colors: ["#388e3c"],
+      stroke: {
+        lineCap: "round",
+      },
+      markers: {
+        size: 5,
+      },
+      xaxis: {
+        ...chartsConfig.xaxis,
+        categories: ["S", "M", "T", "W", "T", "F", "S"],
+      },
     },
-  ],
-  options: {
-    ...chartsConfig,
-    colors: ["#388e3c"],
-    stroke: {
-      lineCap: "round",
-    },
-    markers: {
-      size: 5,
-    },
-    xaxis: {
-      ...chartsConfig.xaxis,
-      categories: [
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-    },
-  },
-};
-const completedTasksChart = {
-  ...completedTaskChart,
-  series: [
-    {
-      name: "Tasks",
-      data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-    },
-  ],
+  };
 };
 
-export const statisticsChartsData = [
-  {
-    color: "white",
-    title: "Website View",
-    description: "Last Campaign Performance",
-    footer: "campaign sent 2 days ago",
-    chart: websiteViewsChart,
-  },
-  {
-    color: "white",
-    title: "Daily Sales",
-    description: "15% increase in today sales",
-    footer: "updated 4 min ago",
-    chart: dailySalesChart,
-  },
-  {
-    color: "white",
-    title: "Completed Tasks",
-    description: "Last Campaign Performance",
-    footer: "just updated",
-    chart: completedTasksChart,
-  },
-];
+// const completedTasksChart = {
+//   ...completedTaskChart,
+//   series: [
+//     {
+//       name: "Tasks",
+//       data: [20, 40, 300, 220, 500, 250, 400, 230, 500],
+//     },
+//   ],
+// };
+
+export const statisticsChartsData = async () => {
+  const websiteViewsChart = await getWebsiteViewsChart();
+  const dailyRedeemerdRewards = await getRedeemedChart();
+  const dailyRequestRewards = await getRequestChart();
+
+  return [
+    {
+      color: "white",
+      title: "Transaction",
+      description: "Overview of Transaction Per Day",
+      footer: "Transaction Every Week",
+      chart: websiteViewsChart,
+    },
+    {
+      color: "white",
+      title: "Redeemed Rewards",
+      description: "Overview of Redeemed Rewards Per Day",
+      footer: "Transaction Per Week",
+      chart: dailyRedeemerdRewards,
+    },
+    {
+      color: "white",
+      title: "Rerquested File",
+      description: "Requested File",
+      footer: "Requested File",
+      chart: dailyRequestRewards,
+    },
+  ];
+};
 
 export default statisticsChartsData;
