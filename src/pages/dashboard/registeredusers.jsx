@@ -26,6 +26,7 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { collection, onSnapshot } from "firebase/firestore";
 import { FirebaseFirestore } from "@/firebase";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 const TABS = [
   {
     label: "All",
@@ -82,9 +83,15 @@ const TABLE_ROWS = [
     date: "04/10/21",
   },
 ];
+
 export function RegisteredUsers() {
   const [users, setUsers] = useState([]);
 
+  const navigate = useNavigate();
+  const moveRequest = (id) => {
+    console.log(id);
+    navigate(`/dashboard/profile/${id}`);
+  };
   function convertToTitleCase(text) {
     if (!text || text == "") {
       return text; // Return the original text if it's null, undefined, or an empty string
@@ -112,7 +119,7 @@ export function RegisteredUsers() {
 
   return (
     <div className="mx-auto my-14 flex max-w-screen-xl flex-col gap-8">
-      <Card className="h-full w-full">
+      <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
             <div>
@@ -167,12 +174,12 @@ export function RegisteredUsers() {
                 {TABLE_HEAD.map((head) => (
                   <th
                     key={head}
-                    className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
+                    className="border-b border-blue-gray-50 px-5 py-3 text-left"
                   >
                     <Typography
                       variant="small"
                       color="blue-gray"
-                      className="font-normal leading-none opacity-70"
+                      className="text-[11px] font-bold uppercase text-blue-gray-400"
                     >
                       {head}
                     </Typography>
@@ -182,29 +189,29 @@ export function RegisteredUsers() {
             </thead>
             <tbody>
               {users.map((user, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
+                const isLast = index === users.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
 
                 return (
-                  <tr key={name}>
+                  <tr key={user.id}>
                     <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar src="/images/unknown.jpg" size="sm" />
+                      <div className="flex items-center gap-4">
+                        <Avatar
+                          src="/images/unknown.jpg"
+                          size="sm"
+                          variant="rounded"
+                        />
                         <div className="flex flex-col">
                           <Typography
                             variant="small"
                             color="blue-gray"
-                            className="font-normal"
+                            className="font-semibold"
                           >
                             {user.firstname}
                           </Typography>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal opacity-70"
-                          >
+                          <Typography className="text-xs font-normal text-blue-gray-500">
                             {user.email}
                           </Typography>
                         </div>
@@ -212,39 +219,23 @@ export function RegisteredUsers() {
                     </td>
                     <td className={classes}>
                       <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
+                        <Typography className="text-sm font-semibold text-blue-gray-600">
                           {`${convertToTitleCase(
                             user.area,
                           )}, ${convertToTitleCase(user.barangay)}`}
                         </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal opacity-70"
-                        >
+                        <Typography className="text-xs font-normal text-blue-gray-500">
                           {`${user.city}, ${user.province}`}
                         </Typography>
                       </div>
                     </td>
                     <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {user.phone}
+                      <Typography className="text-sm font-normal text-blue-gray-600">
+                        {user.id}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
+                      <Typography className="text-sm font-normal text-blue-gray-600">
                         {convertToTitleCase(user.youth)}
                       </Typography>
                     </td>
@@ -253,15 +244,18 @@ export function RegisteredUsers() {
                         <Chip
                           variant="ghost"
                           size="sm"
-                          value={user.verified ? "Not Verified" : "Verified"}
-                          color={user.verified ? "red" : "green"}
+                          value={user.verified ? "Verified" : "Not Verified"}
+                          color={user.verified ? "green" : "red"}
                         />
                       </div>
                     </td>
 
                     <td className={classes}>
                       <Tooltip content="View User">
-                        <IconButton variant="text">
+                        <IconButton
+                          onClick={() => moveRequest(user.id)}
+                          variant="text"
+                        >
                           <EyeIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>

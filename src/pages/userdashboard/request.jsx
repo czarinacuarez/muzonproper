@@ -502,7 +502,8 @@ export function UserRequest() {
                       {requestsInfo ? requestsInfo.document_name : "Loading..."}
                     </Typography>
                     <Typography className="text-xs font-normal text-blue-gray-400">
-                      5 pages
+                      {requestsInfo ? requestsInfo.pages : "Loading..."} pages /
+                      points
                     </Typography>
                   </div>
                 </div>

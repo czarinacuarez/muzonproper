@@ -13,25 +13,13 @@ export function ProfileInfoCard({ title, description, details, action }) {
         color="transparent"
         shadow={false}
         floated={false}
-        className="mx-0 mt-0 mb-4 flex items-center justify-between gap-4"
+        className="mx-0 mb-4 mt-0 flex items-center justify-between gap-4"
       >
         <Typography variant="h6" color="blue-gray">
           {title}
         </Typography>
-        {action}
       </CardHeader>
       <CardBody className="p-0">
-        {description && (
-          <Typography
-            variant="small"
-            className="font-normal text-blue-gray-500"
-          >
-            {description}
-          </Typography>
-        )}
-        {description && details ? (
-          <hr className="my-8 border-blue-gray-50" />
-        ) : null}
         {details && (
           <ul className="flex flex-col gap-4 p-0">
             {Object.keys(details).map((el, key) => (
@@ -46,7 +34,7 @@ export function ProfileInfoCard({ title, description, details, action }) {
                 {typeof details[el] === "string" ? (
                   <Typography
                     variant="small"
-                    className="font-normal text-blue-gray-500"
+                    className="font-normal capitalize text-blue-gray-500"
                   >
                     {details[el]}
                   </Typography>

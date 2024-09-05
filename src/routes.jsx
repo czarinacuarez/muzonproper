@@ -76,6 +76,11 @@ export const routes = [
         path: "/request/:id",
         element: <Request />,
       },
+      {
+        name: "profile",
+        path: "/profile/:id",
+        element: <Profile />,
+      },
     ],
   },
   // {

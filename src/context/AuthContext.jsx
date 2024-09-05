@@ -56,7 +56,7 @@ export const UserDataProvider = ({ children }) => {
 
   return (
     <UserDataContext.Provider value={{ user, userType, userInfo }}>
-      {isLoading ? <LoadingPage /> : children}
+      {children}
     </UserDataContext.Provider>
   );
 };

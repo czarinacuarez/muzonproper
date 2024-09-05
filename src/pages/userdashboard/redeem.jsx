@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react"; // Ensure useRef is imported
-import { GiftTopIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, GiftTopIcon, PencilIcon } from "@heroicons/react/24/solid";
 import {
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
@@ -210,14 +210,18 @@ export function Redeem() {
 
   return (
     <div className="mx-auto my-14 flex max-w-screen-lg flex-col gap-8">
-      <Card className="h-full w-full">
+      <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
-              <Typography variant="h5" color="blue-gray">
+              <Typography variant="h6" color="blue-gray">
                 Print Rewards
               </Typography>
-              <Typography color="gray" className="mt-1 font-normal">
+              <Typography
+                color="gray"
+                variant="small"
+                className="mt-1 font-normal"
+              >
                 These are the details regarding the user's request to redeem
                 printed paper rewards.
               </Typography>
@@ -322,14 +326,13 @@ export function Redeem() {
                 {TABLE_HEAD.map((head) => (
                   <th
                     key={head}
-                    className={`border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 ${
+                    className={`border-b border-blue-gray-50 px-5 py-3 text-left ${
                       head === "Date" ? "hidden sm:table-cell" : ""
                     }`}
                   >
                     <Typography
                       variant="small"
-                      color="blue-gray"
-                      className="font-normal leading-none opacity-70"
+                      className="text-[11px] font-bold uppercase text-blue-gray-400"
                     >
                       {head}
                     </Typography>
@@ -358,29 +361,17 @@ export function Redeem() {
                   return (
                     <tr key={id}>
                       <td className={classes}>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {truncate(document_name, 20)}
+                        <Typography className="text-sm font-semibold text-blue-gray-600">
+                          {truncate(document_name, 25)}
                         </Typography>
                       </td>
                       <td className={classes}>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
+                        <Typography className="text-sm font-normal text-blue-gray-600">
                           {formatTimestamp(deadline)}
                         </Typography>
                       </td>
                       <td className={`${classes} hidden md:table-cell`}>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
+                        <Typography className="text-sm font-normal text-blue-gray-600">
                           {formatTimestamp(submissionDate)}
                         </Typography>
                       </td>
@@ -408,7 +399,7 @@ export function Redeem() {
                             variant="text"
                             onClick={() => moveRequest(id)}
                           >
-                            <PencilIcon className="h-4 w-4" />
+                            <EyeIcon className="h-4 w-4" />
                           </IconButton>
                         </Tooltip>
                       </td>

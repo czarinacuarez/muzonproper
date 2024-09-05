@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react"; // Ensure useRef is imported
-import { PencilIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, PencilIcon, TvIcon } from "@heroicons/react/24/solid";
 import {
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
@@ -8,8 +8,12 @@ import {
   Card,
   CardHeader,
   Typography,
+  Dialog,
   Button,
   CardBody,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
   Chip,
   CardFooter,
   Avatar,
@@ -17,7 +21,10 @@ import {
   Tooltip,
   Input,
 } from "@material-tailwind/react";
-
+import { useUser } from "@/context/AuthContext";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { FirebaseFirestore } from "@/firebase";
+import { useNavigate } from "react-router-dom";
 // Set up the worker path
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 
@@ -142,9 +149,22 @@ const PDFViewer = ({ file }) => {
 
 export function UserTransactions() {
   const [file, setFile] = useState(null);
+  const [size, setSize] = React.useState(null);
+  const navigate = useNavigate();
 
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+  const handleOpen = (value, transaction = null) => {
+    setSize(value); // Set the dialog size
+    setSelectedTransaction(transaction); // Store transaction data
+  };
+  const { user } = useUser();
+  const [mergedHistory, setMergedHistory] = useState([]);
   const [fileName, setFileName] = useState("");
   const [numPages, setNumPages] = useState(null);
+  const moveRequest = (id) => {
+    navigate(`/userdashboard/request/${id}`);
+  };
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -182,22 +202,106 @@ export function UserTransactions() {
 
   const [pdfURL, setPdfURL] = useState(null);
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "Loading...";
+
+    const date = new Date(timestamp.toDate()); // Convert Firestore Timestamp to JavaScript Date
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    };
+
+    return date.toLocaleString("en-US", options);
+  };
+  useEffect(() => {
+    if (!user) return; // Exit if user is not defined
+
+    const userId = user.uid;
+
+    // Reference to pointsAddedHistory collection
+    const pointsAddedQuery = query(
+      collection(FirebaseFirestore, "pointsAddedHistory"),
+      where("userId", "==", userId),
+    );
+
+    // Reference to pointsReductionHistory collection
+    const pointsReductionQuery = query(
+      collection(FirebaseFirestore, "pointsReductionHistory"),
+      where("userId", "==", userId),
+    );
+
+    const unsubscribeAdded = onSnapshot(pointsAddedQuery, (snapshot) => {
+      const addedPoints = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        type: "added",
+        id: doc.id,
+        points: doc.data().points, // Ensure correct mapping
+      }));
+
+      setMergedHistory((prev) => {
+        const updated = [...prev, ...addedPoints];
+        const unique = Array.from(
+          new Map(updated.map((item) => [item.id, item])).values(),
+        );
+        return unique.sort((a, b) => b.timestamp - a.timestamp);
+      });
+    });
+
+    const unsubscribeReduction = onSnapshot(
+      pointsReductionQuery,
+      (snapshot) => {
+        const reducedPoints = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          type: "reduced",
+          id: doc.id,
+          points: doc.data().points_deducted, // Correctly map points_deducted
+        }));
+
+        setMergedHistory((prev) => {
+          const updated = [...prev, ...reducedPoints];
+          const unique = Array.from(
+            new Map(updated.map((item) => [item.id, item])).values(),
+          );
+          return unique.sort((a, b) => b.timestamp - a.timestamp);
+        });
+      },
+    );
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribeAdded();
+      unsubscribeReduction();
+    };
+  }, [user]);
+
+  if (!user) {
+    return <div>Loading...</div>; // Optional: loading state if user data is not yet available
+  }
+
   return (
     <div className="mx-auto my-14 flex max-w-screen-lg flex-col gap-8">
-      <Card className="h-full w-full">
+      <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
-              <Typography variant="h5" color="blue-gray">
+              <Typography variant="h6" color="blue-gray">
                 Points History
               </Typography>
-              <Typography color="gray" className="mt-1 font-normal">
+              <Typography
+                color="gray"
+                variant="small"
+                className="mt-1 font-normal"
+              >
                 These are the details regarding with user's points transaction
                 history.
               </Typography>
             </div>
             <div className="flex w-full shrink-0 gap-2 md:w-max">
-              <div className="w-full md:w-72">
+              {/* <div className="w-full md:w-72">
                 <Input
                   label="Search"
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -206,7 +310,7 @@ export function UserTransactions() {
               <Button className="flex items-center gap-3" size="sm">
                 <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" /> Send
                 Request
-              </Button>
+              </Button> */}
             </div>
           </div>
         </CardHeader>
@@ -217,12 +321,11 @@ export function UserTransactions() {
                 {TABLE_HEAD.map((head) => (
                   <th
                     key={head}
-                    className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
+                    className="border-b border-blue-gray-50 px-5 py-3 text-left"
                   >
                     <Typography
                       variant="small"
-                      color="blue-gray"
-                      className="font-normal leading-none opacity-70"
+                      className="text-[11px] font-bold uppercase text-blue-gray-400"
                     >
                       {head}
                     </Typography>
@@ -231,76 +334,75 @@ export function UserTransactions() {
               </tr>
             </thead>
             <tbody>
-              {TABLE_ROWS.map(({ img, name, amount, date, status }, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
+              {mergedHistory.map(
+                ({ type, points, timestamp, id, transactionId }, index) => {
+                  const isLast = index === mergedHistory.length - 1;
+                  const classes = isLast
+                    ? "p-4"
+                    : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr key={name}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={name}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {name}
+                  return (
+                    <tr key={id}>
+                      <td className={classes}>
+                        <div className="flex items-center gap-3">
+                          <Typography className="text-sm font-semibold text-blue-gray-600">
+                            {type === "added"
+                              ? "Bottle Insertion"
+                              : "Redeemed Rewards"}
+                          </Typography>
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <Typography className="text-sm font-semibold text-blue-gray-600">
+                          {points}
                         </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {amount}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          size="sm"
-                          variant="ghost"
-                          value={status}
-                          color={
-                            status === "paid"
-                              ? "green"
-                              : status === "pending"
-                              ? "amber"
-                              : "red"
-                          }
-                        />
-                      </div>
-                    </td>
+                      </td>
+                      <td className={classes}>
+                        <Typography className="text-sm font-normal text-blue-gray-600">
+                          {formatTimestamp(timestamp)}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <div className="w-max">
+                          <Chip
+                            size="sm"
+                            variant="ghost"
+                            value={type}
+                            color={type === "added" ? "green" : "red"}
+                          />
+                        </div>
+                      </td>
 
-                    <td className={classes}>
-                      <Tooltip content="Edit User">
-                        <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td className={classes}>
+                        <Tooltip content="View Transaction">
+                          {type === "added" ? (
+                            <IconButton
+                              onClick={() =>
+                                handleOpen("xs", {
+                                  type,
+                                  points,
+                                  timestamp,
+                                  id,
+                                })
+                              }
+                              variant="text"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </IconButton>
+                          ) : (
+                            <IconButton
+                              onClick={() => moveRequest(transactionId)}
+                              variant="text"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </IconButton>
+                          )}
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  );
+                },
+              )}
             </tbody>
           </table>
         </CardBody>
@@ -314,7 +416,83 @@ export function UserTransactions() {
           </Button>
         </CardFooter>
       </Card>
-      <div>
+
+      <Dialog
+        open={
+          size === "xs" ||
+          size === "sm" ||
+          size === "md" ||
+          size === "lg" ||
+          size === "xl" ||
+          size === "xxl"
+        }
+        size={size || "md"}
+        handler={handleOpen}
+      >
+        <DialogHeader>
+          <Typography variant="h5">Bottle Insertion</Typography>
+        </DialogHeader>
+        <DialogBody>
+          <Card className="pt-4">
+            <CardHeader variant="gradient" color="gray" className="mb-8 p-6">
+              <Typography variant="h6" color="white">
+                Transaction Details
+              </Typography>
+            </CardHeader>
+            <CardBody className="px-6 pb-6 pt-0">
+              <div className="">
+                <table className="w-full min-w-[640px] table-auto text-left">
+                  <thead></thead>
+                  <tbody>
+                    {selectedTransaction ? (
+                      <tr>
+                        <td colSpan="3">
+                          <div className="space-y-2 text-sm">
+                            <p>
+                              <strong className="text-gray-700">Id:</strong>{" "}
+                              {selectedTransaction.id}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">Date:</strong>{" "}
+                              {formatTimestamp(selectedTransaction.timestamp)}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Total Points:
+                              </strong>{" "}
+                              {selectedTransaction.points}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="py-4 text-center text-gray-500"
+                        >
+                          No transaction data available.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardBody>
+          </Card>
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            variant="gradient"
+            color="green"
+            onClick={() => handleOpen(null)}
+          >
+            <span>Ok</span>
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* <div>
         <input
           type="file"
           accept="application/pdf"
@@ -333,7 +511,7 @@ export function UserTransactions() {
           <p>File Name: {fileName}</p>
           <p>Number of Pages: {numPages}</p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

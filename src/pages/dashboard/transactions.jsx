@@ -94,6 +94,7 @@ export function Transactions() {
           firstName: doc.data().firstname,
           lastName: doc.data().lastname,
           imageUrl: doc.data().imageUrl,
+          email: doc.data().email,
         }));
         setUsers(usersData);
       },
@@ -138,6 +139,7 @@ export function Transactions() {
       // Create a map of user IDs to full names and image URLs
       const userMap = users.reduce((map, user) => {
         map[user.id] = {
+          email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           imageUrl: user.imageUrl, // Ensure this is correctly included
         };
@@ -147,6 +149,8 @@ export function Transactions() {
       // Combine requests with user names and images
       const requestsWithUserInfo = requests.map((request) => ({
         ...request,
+        email: userMap[request.user_id]?.email || "Unknown User",
+
         userName: userMap[request.user_id]?.name || "Unknown User",
         userImage: userMap[request.user_id]?.imageUrl || "default_image_url", // Provide a default image URL if necessary
       }));
@@ -209,7 +213,7 @@ export function Transactions() {
 
   return (
     <div className="mx-auto my-14 flex max-w-screen-xl flex-col gap-8">
-      <Card className="h-full w-full">
+      <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
@@ -244,12 +248,12 @@ export function Transactions() {
                 {TABLE_HEAD.map((head) => (
                   <th
                     key={head}
-                    className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
+                    className="border-b border-blue-gray-50 px-5 py-3 text-left"
                   >
                     <Typography
                       variant="small"
                       color="blue-gray"
-                      className="font-normal leading-none opacity-70"
+                      className="text-[11px] font-bold uppercase text-blue-gray-400"
                     >
                       {head}
                     </Typography>
@@ -260,54 +264,53 @@ export function Transactions() {
             <tbody>
               {filteredRequests.map((request, index) => {
                 const isLast = index === filteredRequests.length - 1;
-                const classes = isLast
+                const clase = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
+
+                const classes = `py-3 px-5 ${
+                  index === filteredRequests.length - 1
+                    ? ""
+                    : "border-b border-blue-gray-50"
+                }`;
 
                 return (
                   <tr key={request.id}>
                     <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        {/* Ensure userImage is available if needed */}
+                      <div className="flex items-center gap-4">
                         <Avatar
                           src="/images/unknown.jpg"
                           alt={request.userName}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
+                          size="sm"
+                          variant="rounded"
                         />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {truncate(request.userName)}
-                        </Typography>
+                        <div>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-semibold"
+                          >
+                            {truncate(request.userName)}
+                          </Typography>
+                          <Typography className="text-xs font-normal text-blue-gray-500">
+                            {request.email}
+                          </Typography>
+                        </div>
                       </div>
                     </td>
+
                     <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {truncate(request.document_name, 20)}
+                      <Typography className="text-sm font-semibold text-blue-gray-600">
+                        {truncate(request.document_name, 25)}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
+                      <Typography className="text-sm font-normal text-blue-gray-600">
                         {formatTimestamp(request.deadline)}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
+                      <Typography className="text-sm font-normal text-blue-gray-600">
                         {formatTimestamp(request.submissionDate)}
                       </Typography>
                     </td>

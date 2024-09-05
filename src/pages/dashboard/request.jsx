@@ -28,7 +28,7 @@ import {
   ClockIcon,
   PencilIcon,
 } from "@heroicons/react/24/solid";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   doc,
   onSnapshot,
@@ -47,8 +47,14 @@ export function Request() {
   const [users, setUsers] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
 
-  const [requestsInfo, setRequests] = useState(null);
+  const [userId, setUserId] = useState(null);
 
+  const [requestsInfo, setRequests] = useState(null);
+  const navigate = useNavigate();
+  const moveRequest = (id) => {
+    console.log(id);
+    navigate(`/dashboard/profile/${id}`);
+  };
   function formatTimestamp(timestamp) {
     if (!timestamp) return "Loading...";
 
@@ -111,6 +117,7 @@ export function Request() {
                 points_deducted: pages,
                 timestamp: serverTimestamp(),
                 userId: requestsInfo.user_id,
+                transactionId: id,
               });
             } catch (error) {
               console.error("Error handling pointsHistory request:", error);
@@ -158,6 +165,7 @@ export function Request() {
     let unsubscribeRequest = null;
     let unsubscribeUser = null;
     let unsubscribeUserPoints = null;
+
     // Fetch request document
     const fetchRequestData = async () => {
       try {
@@ -169,6 +177,7 @@ export function Request() {
             if (requestDocSnap.exists()) {
               const requestData = requestDocSnap.data();
               setRequests(requestData);
+              setUserId(requestData.user_id);
 
               // Fetch user document
               const userDocRef = doc(
@@ -354,7 +363,9 @@ export function Request() {
                 </IconButton>
               </MenuHandler>
               <MenuList>
-                <MenuItem>View Profile</MenuItem>
+                <MenuItem onClick={() => moveRequest(userId)}>
+                  View Profile
+                </MenuItem>
               </MenuList>
             </Menu>
           </CardHeader>
