@@ -32,8 +32,8 @@ export const FetchUserRedeemReport = async () => {
     const querySnapshot = await getDocs(pointsQuery);
 
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const { points_deducted, timestamp } = data;
+      const redeemedDataP = doc.data();
+      const { points_deducted, timestamp } = redeemedDataP;
 
       const localTime = moment(timestamp.toDate()).tz('Asia/Manila');
       const date = localTime.format('YYYY-MM-DD');
@@ -45,11 +45,9 @@ export const FetchUserRedeemReport = async () => {
       dailyTransactions[date] += points_deducted;
     });
 
-    // Get sorted dates and daily totals
     const sortedDates = Object.keys(dailyTransactions).sort();
     const dailyTotals = sortedDates.map(date => dailyTransactions[date]);
 
-    // Generate dates for the current week
     const startDate = moment().startOf('week'); 
     const endDate = moment().endOf('week'); 
     const weekDates = [];
@@ -60,7 +58,6 @@ export const FetchUserRedeemReport = async () => {
       currentDate = currentDate.add(1, 'day');
     }
 
-    // Align weekly totals with week dates
     const weeklyTotals = weekDates.map(date => dailyTransactions[date] || 0);
 
     return weeklyTotals;

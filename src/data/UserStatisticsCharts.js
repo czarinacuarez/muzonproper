@@ -14,8 +14,8 @@ const getPointsReportData = async () => {
 
   const getRedeemedReportData = async () => {
     try {
-      const redeemedData = await FetchUserRedeemReport();
-      return redeemedData;
+      const redeemedDataP = await FetchUserRedeemReport();
+      return redeemedDataP;
     } catch (error) {
       console.error("Error fetching chart data: ", error);
       return [0, 0, 0, 0, 0, 0, 0]; 
@@ -29,7 +29,7 @@ const getPointsReportChart = async () => {
         height: 220,
         series: [
             {
-            name: "Views",
+            name: "Points",
             data: data,
             },
         ],
@@ -51,31 +51,30 @@ const getPointsReportChart = async () => {
 };
 
 const getRedeemReportChart = async () => {
-    const redeemedData = await getRedeemedReportData();
-    return {
-        type: "line",
-        height: 220,
-        series: [
-            {
-            name: "Sales",
-            data: redeemedData,
-            },
-        ],
-        options: {
-            ...chartsConfig,
-            colors: ["#0288d1"],
-            stroke: {
-                lineCap: "round",
-            },
-            markers: {
-            size: 5,
-            },
-            xaxis: {
-            ...chartsConfig.xaxis,
-            categories: ["S", "M", "T", "W", "T", "F", "S"],
-            },
+  const redeemedDataP = await getRedeemedReportData();
+  return {
+      type: "bar",
+      height: 220,
+      series: [
+          {
+          name: "Points",
+          data: redeemedDataP,
+          },
+      ],
+      options: {
+        ...chartsConfig,
+        colors: "#388e3c",
+        plotOptions: {
+        bar: {
+            columnWidth: "40%",
         },
-    };
+        },
+        xaxis: {
+        ...chartsConfig.xaxis,
+        categories: ["S", "M", "T", "W", "T", "F", "S"],
+        },
+    },
+  };
 };
 
 const completedTaskChart = {
