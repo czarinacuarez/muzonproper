@@ -1,12 +1,12 @@
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
 import moment from 'moment-timezone';
-import { getAuth } from "firebase/auth";
+// import { getAuth } from "firebase/auth";
+import { FirebaseAuth } from "../firebase";
 
 const firestore = getFirestore();
 
 const getCurrentUserId = () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const user = FirebaseAuth.currentUser;
   if (user) {
     return user.uid;
   } else {
