@@ -13,6 +13,7 @@ import {
   UserProfile,
   UserTables,
   UserNotifications,
+  UserAccount,
   SkProfiling,
   Redeem,
   UserTransactions,
@@ -46,12 +47,11 @@ export const routes = [
         path: "/print",
         element: <Redeem />,
       },
-      // {
-      //   icon: <UserCircleIcon {...icon} />,
-      //   name: "profile",
-      //   path: "/profile",
-      //   element: <UserProfile />,
-      // },
+      {
+        name: "profile",
+        path: "/profile",
+        element: <UserProfile />,
+      },
       // {
       //   icon: <TableCellsIcon {...icon} />,
       //   name: "tables",
@@ -73,6 +73,11 @@ export const routes = [
         name: "profiling",
         path: "/profiling",
         element: <SkProfiling />,
+      },
+      {
+        name: "account",
+        path: "/account",
+        element: <UserAccount />,
       },
     ],
   },

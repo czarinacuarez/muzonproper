@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { FirebaseAuth } from "../../firebase";
 import {
   Navbar,
@@ -37,6 +37,11 @@ export function DashboardNavbar() {
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { userInfo } = useUser();
+  const navigate = useNavigate();
+
+  const moveProfile = () => {
+    navigate(`/dashboard/account`);
+  };
 
   return (
     <Navbar
@@ -98,7 +103,10 @@ export function DashboardNavbar() {
               </Button>
             </MenuHandler>
             <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-4">
+              <MenuItem
+                onClick={() => moveProfile()}
+                className="flex items-center gap-4"
+              >
                 <div className="grid place-items-center rounded-full bg-gradient-to-tr">
                   <UserCircleIcon className="h-6 w-6 text-black/70" />
                 </div>
@@ -108,10 +116,11 @@ export function DashboardNavbar() {
                     color="blue-gray"
                     className=" font-normal "
                   >
-                    Account
+                    Account Settings
                   </Typography>
                 </div>
               </MenuItem>
+
               <MenuItem
                 onClick={() => FirebaseAuth.signOut()}
                 className="flex items-center gap-4"

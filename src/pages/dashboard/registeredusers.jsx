@@ -36,74 +36,25 @@ const TABS = [
 
 const TABLE_HEAD = ["User", "Area", "Contact", "Youth", "Verification", ""];
 
-const TABLE_ROWS = [
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "John Michael",
-    email: "john@creative-tim.com",
-    job: "Manager",
-    org: "Organization",
-    online: true,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "Alexa Liras",
-    email: "alexa@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: false,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Laurent Perrier",
-    email: "laurent@creative-tim.com",
-    job: "Executive",
-    org: "Projects",
-    online: false,
-    date: "19/09/17",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Michael Levi",
-    email: "michael@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: true,
-    date: "24/12/08",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Richard Gran",
-    email: "richard@creative-tim.com",
-    job: "Manager",
-    org: "Executive",
-    online: false,
-    date: "04/10/21",
-  },
-];
-
 export function RegisteredUsers() {
   const [users, setUsers] = useState([]);
-
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const navigate = useNavigate();
+
   const moveRequest = (id) => {
-    console.log(id);
     navigate(`/dashboard/profile/${id}`);
   };
+
   function convertToTitleCase(text) {
-    if (!text || text == "") {
-      return text; // Return the original text if it's null, undefined, or an empty string
-    }
+    if (!text || text === "") return text;
     return text
-      .split("-") // Split the string by hyphens
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
-      .join(" "); // Join the words with spaces
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   }
+
   useEffect(() => {
     const usersCollection = collection(FirebaseFirestore, "users");
-
     const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
       const usersData = snapshot.docs
         .map((doc) => ({
@@ -116,6 +67,17 @@ export function RegisteredUsers() {
 
     return () => unsubscribe();
   }, []);
+
+  // Function to handle the search logic
+  const filteredUsers = users.filter((user) => {
+    const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
+    const email = user.email.toLowerCase();
+    const searchLowerCase = searchQuery.toLowerCase();
+
+    return (
+      fullName.includes(searchLowerCase) || email.includes(searchLowerCase)
+    );
+  });
 
   return (
     <div className="mx-auto my-14 flex max-w-screen-xl flex-col gap-8">
@@ -131,14 +93,6 @@ export function RegisteredUsers() {
                 Proper here.
               </Typography>
             </div>
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              {/* <Button variant="outlined" size="sm">
-                view all
-              </Button>
-              <Button className="flex items-center gap-3" size="sm">
-                <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add member
-              </Button> */}
-            </div>
           </div>
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <Tabs value="all" className="w-full md:w-max">
@@ -152,14 +106,13 @@ export function RegisteredUsers() {
             </Tabs>
             <div className="grid w-max grid-cols-1 gap-2 md:grid-cols-3">
               <div className="md:col-span-2">
-                <div className="w-full md:w-full">
-                  <Input
-                    label="Search"
-                    icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                  />
-                </div>
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+                />
               </div>
-
               <Button className="flex w-full items-center gap-3" size="sm">
                 <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" />{" "}
                 Download
@@ -170,26 +123,11 @@ export function RegisteredUsers() {
         <CardBody className="overflow-x-scroll px-0">
           <table className="mt-4 w-full min-w-max table-auto text-left">
             <thead>
-              <tr>
-                {TABLE_HEAD.map((head) => (
-                  <th
-                    key={head}
-                    className="border-b border-blue-gray-50 px-5 py-3 text-left"
-                  >
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="text-[11px] font-bold uppercase text-blue-gray-400"
-                    >
-                      {head}
-                    </Typography>
-                  </th>
-                ))}
-              </tr>
+              <tr>{/* Render your table headers here */}</tr>
             </thead>
             <tbody>
-              {users.map((user, index) => {
-                const isLast = index === users.length - 1;
+              {filteredUsers.map((user, index) => {
+                const isLast = index === filteredUsers.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";

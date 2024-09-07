@@ -18,6 +18,7 @@ import {
   Reports,
   RegisteredUsers,
   Request,
+  Accounts,
 } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
@@ -80,6 +81,11 @@ export const routes = [
         name: "profile",
         path: "/profile/:id",
         element: <Profile />,
+      },
+      {
+        name: "account",
+        path: "/account",
+        element: <Accounts />,
       },
     ],
   },

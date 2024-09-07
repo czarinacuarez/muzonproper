@@ -16,7 +16,10 @@ import {
   Textarea,
 } from "@material-tailwind/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useUser } from "@/context/AuthContext";
+import { FirebaseFirestore } from "@/firebase";
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 
 export function SkProfiling() {
   const [showAlerts, setShowAlerts] = React.useState({
@@ -31,6 +34,8 @@ export function SkProfiling() {
     orange: true,
     red: true,
   });
+
+  const { user } = useUser();
 
   const handleInputChange = (e) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value });
@@ -59,10 +64,11 @@ export function SkProfiling() {
   });
 
   const handleSelectChange = (val, name) => {
-    setFormValues({ ...formValues, name: val });
+    setFormValues({ ...formValues, [name]: val }); // Use [name] to dynamically set the key
     console.log(val);
     console.log(name);
   };
+
   const cardData = [
     {
       title: "Educational Background",
@@ -168,6 +174,35 @@ export function SkProfiling() {
   }, []);
   const handleOpen = () => setShowDialog(!open);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const userRef = doc(FirebaseFirestore, "users", user.uid);
+
+      await updateDoc(userRef, {
+        verified: true,
+        profiling: {
+          timestamp: serverTimestamp(),
+          education: formValues.education,
+          workStatus: formValues.workStatus,
+          registeredSk: formValues.registeredSk,
+          registeredNational: formValues.registeredNational,
+          voted: formValues.voted,
+          votedYear: formValues.votedYear,
+          attended: formValues.attended,
+          member: formValues.member,
+          willing: formValues.willing,
+          hobbies: formValues.hobbies,
+          recommended: formValues.recommended,
+          policy: formValues.policy,
+        },
+      });
+
+      navigate(`/userdashboard/home`);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
   return (
     <div className="mx-auto my-20 flex max-w-screen-md flex-col gap-8">
       {/* Dialog Component */}
@@ -229,7 +264,7 @@ export function SkProfiling() {
         </DialogFooter>
       </Dialog>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         {cardData.map((card, index) => (
           <Card
             key={index}
@@ -291,7 +326,7 @@ export function SkProfiling() {
         ))}
 
         <div className=" md:row-reverse  flex">
-          <Button>Submit</Button>
+          <Button type="submit">Submit</Button>
         </div>
       </form>
     </div>

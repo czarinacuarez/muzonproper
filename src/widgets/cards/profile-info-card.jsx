@@ -18,6 +18,7 @@ export function ProfileInfoCard({ title, description, details, action }) {
         <Typography variant="h6" color="blue-gray">
           {title}
         </Typography>
+        {action}
       </CardHeader>
       <CardBody className="p-0">
         {details && (

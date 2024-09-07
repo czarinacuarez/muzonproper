@@ -132,14 +132,16 @@ export function Profile() {
                     SK Profiling
                   </Typography>
                   {Object.entries({
-                    "Educational Background": "Master's Graduate",
-                    "Work Status": "Unemployed",
-                    "Are you a registered SK voter?": "No",
-                    "Are you a registered national voter?": "No",
-                    "Voted Last Election?": "No",
-                    "If yes, what year did you vote?": "No",
+                    "Educational Background": user.profiling.education,
+                    "Work Status": user.profiling.workStatus,
+                    "Are you a registered SK voter?":
+                      user.profiling.registeredSk,
+                    "Are you a registered national voter?":
+                      user.profiling.registeredNational,
+                    "Voted Last Election?": user.profiling.voted,
+                    "If yes, what year did you vote?": user.profiling.votedYear,
                     "Have you already attended a KK Assembly? If yes, how many times? If no, why?":
-                      "Not interested to Attend",
+                      user.profiling.attended,
                   }).map(([description, title], index) => (
                     <div className="my-4 flex items-center gap-4" key={index}>
                       <div>
@@ -165,14 +167,15 @@ export function Profile() {
                   </Typography>
                   {Object.entries({
                     "Are you a member of any youth-led organization?":
-                      "Unemployed",
+                      user.profiling.member,
                     "Are you willing to be engaged and be a member of a youth organization and be a youth volunteer in different activities of Sangguniang Kabataan?":
-                      "No",
-                    "Interests and Hobbies (check all that applies)": "No",
+                      user.profiling.willing,
+                    "Interests and Hobbies (check all that applies)":
+                      user.profiling.hobbies,
                     "Ano-anung programa, proyekto, o aktibidad ang nais mong maisakatuparan ng Sangguniang Kabataan ng Barangay Muzon Proper?  Ilagay ang N/A kung walang nais na ma-i-rekomenda.":
-                      "No",
+                      user.profiling.recommended,
                     "Ano-anung polisiya pangkabataan ang nais mong maisakatuparan ng Sangguniang Kabataan ng Barangay Muzon Proper? Ilagay ang N/A kung walang nais na ma-i-rekomenda.":
-                      "No",
+                      user.profiling.policy,
                   }).map(([description, title], index) => (
                     <div className="my-4 flex items-center gap-4" key={index}>
                       <div>

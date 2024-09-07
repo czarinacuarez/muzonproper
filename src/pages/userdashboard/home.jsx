@@ -58,6 +58,10 @@ export function UserHome() {
   const truncate = (str, max) =>
     str.length > max ? `${str.slice(0, max)}...` : str;
 
+  const moveProfile = () => {
+    navigate(`/userdashboard/profiling`);
+  };
+
   const moveRedeem = () => {
     navigate(`/userdashboard/print`);
   };
@@ -218,7 +222,10 @@ export function UserHome() {
                 userVerify ? "Re-answer SK Profiling" : "Answer SK Profiling"
               }
             >
-              <IconButton className="bg-transparent shadow-none">
+              <IconButton
+                onClick={() => moveProfile()}
+                className="bg-transparent shadow-none"
+              >
                 <CheckCircleIcon className="h-6 w-6"></CheckCircleIcon>
               </IconButton>
             </Tooltip>

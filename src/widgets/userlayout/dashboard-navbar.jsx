@@ -21,6 +21,7 @@ import {
   CreditCardIcon,
   Bars3Icon,
   ArrowRightOnRectangleIcon,
+  UserIcon,
 } from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
@@ -37,9 +38,15 @@ export function DashboardNavbar() {
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { userInfo } = useUser();
   const navigate = useNavigate();
-  const moveRequest = () => {
-    navigate(`/userdashboard/profiling`);
+
+  const moveAccount = () => {
+    navigate(`/userdashboard/account`);
   };
+
+  const moveProfile = () => {
+    navigate(`/userdashboard/profile`);
+  };
+
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -101,7 +108,24 @@ export function DashboardNavbar() {
             </MenuHandler>
             <MenuList className="w-max border-0">
               <MenuItem
-                onClick={() => moveRequest()}
+                onClick={() => moveProfile()}
+                className="flex items-center gap-3"
+              >
+                <div className="grid place-items-center rounded-full bg-gradient-to-tr">
+                  <UserIcon className="h-6 w-6 text-black/70" />
+                </div>
+                <div>
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className=" font-normal "
+                  >
+                    Profile
+                  </Typography>
+                </div>
+              </MenuItem>
+              <MenuItem
+                onClick={() => moveAccount()}
                 className="flex items-center gap-3"
               >
                 <div className="grid place-items-center rounded-full bg-gradient-to-tr">
@@ -113,7 +137,7 @@ export function DashboardNavbar() {
                     color="blue-gray"
                     className=" font-normal "
                   >
-                    Profile
+                    Account Settings
                   </Typography>
                 </div>
               </MenuItem>
