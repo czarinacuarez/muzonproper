@@ -14,7 +14,7 @@ import { StatisticsCard } from "@/widgets/cards";
 import { StatisticsChart } from "@/widgets/charts";
 import {
   statisticsCardsData,
-  statisticsChartsData,
+  userStatisticsCharts,
   projectsTableData,
   ordersOverviewData,
 } from "@/data";
@@ -46,6 +46,7 @@ import {
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 export function UserHome() {
+  const [chartsData, setChartsData] = useState([]);
   const { user, userVerify } = useUser();
   const [uid, setUid] = useState("");
   const navigate = useNavigate();
@@ -191,7 +192,16 @@ export function UserHome() {
       };
     }
   }, [user?.id]);
+  const fetchData = async () => {
+      try {
+        const data = await userStatisticsCharts();
+        setChartsData(data);
+      } catch (error) {
+        console.error("Error fetching statistics charts data: ", error);
+      }
+    };
 
+  fetchData();
   return (
     <div className="mt-12">
       <div className="mb-12 grid gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-4">
@@ -281,8 +291,9 @@ export function UserHome() {
           }
         />
       </div>
-      {/* <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
-        {statisticsChartsData.map((props) => (
+
+      <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
+        {chartsData.map((props) => (
           <StatisticsChart
             key={props.title}
             {...props}
@@ -300,7 +311,7 @@ export function UserHome() {
             }
           />
         ))}
-      </div> */}
+      </div>
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="overflow-hidden border border-blue-gray-100 shadow-sm xl:col-span-2">
           <CardHeader
