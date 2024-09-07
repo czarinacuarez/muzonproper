@@ -104,6 +104,16 @@ export function UserHome() {
         where("userId", "==", userId),
       );
 
+      const requestRef = collection(FirebaseFirestore, "requests");
+      const requestQuery = query(
+        requestRef,
+        where("user_id", "==", userId), // Filter by user_id
+        orderBy("deadline", "desc"), // Order by deadline (most recent first)
+        limit(5), // Limit the results to 5 documents
+      );
+
+      const userPointsRef = doc(FirebaseFirestore, "userPoints", userId);
+
       const unsubscribePointsReduction = onSnapshot(
         pointsReductionQuery,
         (snapshot) => {
@@ -116,20 +126,10 @@ export function UserHome() {
         },
       );
 
-      const userPointsRef = doc(FirebaseFirestore, "userPoints", userId);
-
       const unsubscribe = onSnapshot(userPointsRef, (doc) => {
         const data = doc.data();
         setCurrentPoints(data?.points || 0); // Use default value if data is not available
       });
-
-      const requestRef = collection(FirebaseFirestore, "requests");
-      const requestQuery = query(
-        requestRef,
-        where("user_id", "==", userId), // Filter by user_id
-        orderBy("deadline", "desc"), // Order by deadline (most recent first)
-        limit(5), // Limit the results to 5 documents
-      );
 
       const unsubscribeRequests = onSnapshot(requestQuery, (snapshot) => {
         const recentRequests = snapshot.docs.map((doc) => ({
@@ -184,22 +184,22 @@ export function UserHome() {
       );
 
       return () => {
-        unsubscribePointsReduction();
-        unsubscribe();
-        unsubscribeRequests();
-        unsubscribeAdded();
         unsubscribeReduction();
+        unsubscribeAdded();
+        unsubscribeRequests();
+        unsubscribe();
+        unsubscribePointsReduction();
       };
     }
   }, [user?.id]);
   const fetchData = async () => {
-      try {
-        const data = await userStatisticsCharts();
-        setChartsData(data);
-      } catch (error) {
-        console.error("Error fetching statistics charts data: ", error);
-      }
-    };
+    try {
+      const data = await userStatisticsCharts();
+      setChartsData(data);
+    } catch (error) {
+      console.error("Error fetching statistics charts data: ", error);
+    }
+  };
 
   fetchData();
   return (

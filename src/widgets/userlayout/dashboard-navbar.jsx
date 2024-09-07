@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { FirebaseAuth } from "../../firebase";
 import {
   Navbar,
@@ -36,7 +36,10 @@ export function DashboardNavbar() {
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { userInfo } = useUser();
-
+  const navigate = useNavigate();
+  const moveRequest = () => {
+    navigate(`/userdashboard/profiling`);
+  };
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -97,7 +100,10 @@ export function DashboardNavbar() {
               </Button>
             </MenuHandler>
             <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-3">
+              <MenuItem
+                onClick={() => moveRequest()}
+                className="flex items-center gap-3"
+              >
                 <div className="grid place-items-center rounded-full bg-gradient-to-tr">
                   <UserCircleIcon className="h-6 w-6 text-black/70" />
                 </div>

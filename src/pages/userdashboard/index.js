@@ -5,3 +5,4 @@ export * from "@/pages/userdashboard/notifications";
 export * from "@/pages/userdashboard/redeem";
 export * from "@/pages/userdashboard/usertransactions";
 export * from "@/pages/userdashboard/request";
+export * from "@/pages/userdashboard/skprofilling";
