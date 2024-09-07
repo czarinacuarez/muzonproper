@@ -1,4 +1,13 @@
-import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 
 const firestore = getFirestore();
 
@@ -19,13 +28,15 @@ const fetchLatestRequests = async () => {
     const requestsQuery = query(
       collection(firestore, "requests"),
       orderBy("submissionDate", "desc"),
-      limit(5)
+      limit(5),
     );
     const querySnapshot = await getDocs(requestsQuery);
 
     for (const doc of querySnapshot.docs) {
       const data = doc.data();
-      const deadline = data.deadline ? new Date(data.deadline.seconds * 1000) : new Date();
+      const deadline = data.deadline
+        ? new Date(data.deadline.seconds * 1000)
+        : new Date();
       const userDetails = await fetchUserDetails(data.user_id);
 
       latestRequests.push({
@@ -33,6 +44,8 @@ const fetchLatestRequests = async () => {
         lastname: userDetails.lastname || "Unknown",
         document_name: data.document_name || "No name",
         deadline: deadline,
+        id: doc.id,
+        status: data.status,
       });
     }
   } catch (error) {

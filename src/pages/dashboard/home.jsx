@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Card,
@@ -12,11 +12,9 @@ import {
   Avatar,
   Tooltip,
   Progress,
+  Chip,
 } from "@material-tailwind/react";
-import {
-  EllipsisVerticalIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "@/widgets/cards";
 import { StatisticsChart } from "@/widgets/charts";
 import {
@@ -25,17 +23,107 @@ import {
   projectsTableData,
   ordersOverviewData,
 } from "@/data";
-import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
-import fetchLatestRequests from '@/data/LatestRequestFile';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  EnvelopeIcon,
+  EyeIcon,
+  GifIcon,
+  GiftIcon,
+  GlobeAsiaAustraliaIcon,
+  UserIcon,
+} from "@heroicons/react/24/solid";
+import fetchLatestRequests from "@/data/LatestRequestFile";
+import { useNavigate } from "react-router-dom";
+import { FirebaseFirestore } from "@/firebase";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 
 export function Home() {
   const [chartsData, setChartsData] = useState([]);
   const [projectsTableData, setProjectsTableData] = useState([]);
+  const navigate = useNavigate();
+  const truncate = (str, max) =>
+    str.length > max ? `${str.slice(0, max)}...` : str;
+
+  const moveRequest = (id) => {
+    navigate(`/dashboard/request/${id}`);
+  };
+  const [verifiedCount, setVerifiedCount] = useState(0);
+  const [totalPointsDeducted, setTotalPointsDeducted] = useState(0);
+  const [statusCount, setStatusCount] = useState(0);
 
   useEffect(() => {
+    const excludedStatuses = ["received", "rejected", "cancelled"];
+
+    const requestsQuery = query(
+      collection(FirebaseFirestore, "requests"),
+      where("status", "not-in", excludedStatuses),
+    );
+
+    // Real-time listener
+    const unsubscribeRequests = onSnapshot(requestsQuery, (snapshot) => {
+      // Count the number of documents that match the query
+      const count = snapshot.size;
+      setStatusCount(count);
+    });
+
+    const startOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1,
+    );
+    const endOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+    );
+
+    const pointsReductionQuery = query(
+      collection(FirebaseFirestore, "pointsReductionHistory"),
+      where("timestamp", ">=", startOfMonth),
+      where("timestamp", "<=", endOfMonth),
+      orderBy("timestamp", "desc"),
+    );
+
+    // Real-time listener
+    const unsubscribePointsReduction = onSnapshot(
+      pointsReductionQuery,
+      (snapshot) => {
+        let total = 0;
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          // Add up all points_deducted
+          total += data.points_deducted;
+        });
+
+        // Update state with the total points deducted
+        setTotalPointsDeducted(total);
+      },
+    );
+    const q = query(
+      collection(FirebaseFirestore, "users"),
+      where("verified", "==", true),
+    );
+
+    // Set up the real-time listener
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      // Update the count based on the number of documents in the querySnapshot
+      setVerifiedCount(querySnapshot.size);
+    });
+
     const fetchData = async () => {
       try {
-        const data = await statisticsChartsData(); 
+        const data = await statisticsChartsData();
         setChartsData(data);
       } catch (error) {
         console.error("Error fetching statistics charts data: ", error);
@@ -43,6 +131,12 @@ export function Home() {
     };
 
     fetchData();
+
+    return () => {
+      unsubscribeRequests();
+      unsubscribePointsReduction();
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -56,25 +150,64 @@ export function Home() {
 
   return (
     <div className="mt-12">
-      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-        {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
-          <StatisticsCard
-            key={title}
-            {...rest}
-            title={title}
-            icon={React.createElement(icon, {
-              className: "w-6 h-6 text-white",
-            })}
-            footer={
-              <Typography className="font-normal text-blue-gray-600">
-                <strong className={footer.color}>{footer.value}</strong>
-                &nbsp;{footer.label}
-              </Typography>
-            }
-          />
-        ))}
+      <div className="mb-12 grid gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-4">
+        <StatisticsCard
+          value={verifiedCount}
+          title="Verified Users"
+          color="green"
+          icon={React.createElement(UserIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <Typography className="text-sm font-normal text-blue-gray-600">
+              No. of people who answered SK Profiling
+            </Typography>
+          }
+        />
+
+        <StatisticsCard
+          value={statusCount}
+          title="Pending Requests"
+          color="gray"
+          icon={React.createElement(EnvelopeIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <Typography className="text-sm font-normal text-blue-gray-600">
+              Requests awaiting admin approval
+            </Typography>
+          }
+        />
+
+        <StatisticsCard
+          value={verifiedCount}
+          title="Accumulated Bottles"
+          color="gray"
+          icon={React.createElement(GlobeAsiaAustraliaIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <Typography className="text-sm font-normal text-blue-gray-600">
+              Overall total bottles collected
+            </Typography>
+          }
+        />
+
+        <StatisticsCard
+          value={totalPointsDeducted}
+          title="Points Redeemed"
+          color="gray"
+          icon={React.createElement(GiftIcon, {
+            className: "w-6 h-6 text-white",
+          })}
+          footer={
+            <Typography className="text-sm font-normal text-blue-gray-600">
+              Total points used for rewards this month
+            </Typography>
+          }
+        />
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         {chartsData.map((props) => (
           <StatisticsChart
             key={props.title}
@@ -84,16 +217,19 @@ export function Home() {
                 variant="small"
                 className="flex items-center font-normal text-blue-gray-600"
               >
-                <ClockIcon strokeWidth={2} className="h-4 w-4 text-blue-gray-400" />
+                <ClockIcon
+                  strokeWidth={2}
+                  className="h-4 w-4 text-blue-gray-400"
+                />
                 &nbsp;{props.footer}
               </Typography>
             }
           />
         ))}
       </div>
-      
+
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="overflow-hidden xl:col-span-2 border border-blue-gray-100 shadow-sm">
+        <Card className="overflow-hidden border border-blue-gray-100 shadow-sm xl:col-span-2">
           <CardHeader
             floated={false}
             shadow={false}
@@ -108,12 +244,15 @@ export function Home() {
                 variant="small"
                 className="flex items-center gap-1 font-normal text-blue-gray-600"
               >
-                <CheckCircleIcon strokeWidth={3} className="h-4 w-4 text-blue-gray-200" />
+                <CheckCircleIcon
+                  strokeWidth={3}
+                  className="h-4 w-4 text-blue-gray-200"
+                />
                 1-5
               </Typography>
             </div>
             <Menu placement="left-start">
-              <MenuHandler>
+              {/* <MenuHandler>
                 <IconButton size="sm" variant="text" color="blue-gray">
                   <EllipsisVerticalIcon
                     strokeWidth={3}
@@ -126,18 +265,18 @@ export function Home() {
                 <MenuItem>Action</MenuItem>
                 <MenuItem>Another Action</MenuItem>
                 <MenuItem>Something else here</MenuItem>
-              </MenuList>
+              </MenuList> */}
             </Menu>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["First Name", "Last Name", "File Name", "Deadline"].map(
+                  {["User", "Document Name", "Deadline", "Status", ""].map(
                     (el) => (
                       <th
                         key={el}
-                        className="border-b border-blue-gray-50 py-3 px-6 text-left"
+                        className="border-b border-blue-gray-50 px-6 py-3 text-left"
                       >
                         <Typography
                           variant="small"
@@ -146,13 +285,23 @@ export function Home() {
                           {el}
                         </Typography>
                       </th>
-                    )
+                    ),
                   )}
                 </tr>
               </thead>
               <tbody>
                 {projectsTableData.map(
-                  ({ firstname, lastname, document_name, deadline }, key) => {
+                  (
+                    {
+                      firstname,
+                      lastname,
+                      document_name,
+                      deadline,
+                      id,
+                      status,
+                    },
+                    key,
+                  ) => {
                     const className = `py-3 px-5 ${
                       key === projectsTableData.length - 1
                         ? ""
@@ -163,23 +312,15 @@ export function Home() {
                       <tr key={name}>
                         <td className={className}>
                           <div className="flex items-center gap-4">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-bold"
-                            >
-                              {firstname}
+                            <Typography className="text-sm font-semibold text-blue-gray-600">
+                              {firstname} {lastname}
                             </Typography>
                           </div>
                         </td>
                         <td className={className}>
                           <div className="flex items-center gap-4">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-bold"
-                            >
-                              {lastname}
+                            <Typography className="text-sm font-semibold text-blue-gray-600">
+                              {truncate(document_name)}
                             </Typography>
                           </div>
                         </td>
@@ -188,20 +329,41 @@ export function Home() {
                             variant="small"
                             className="text-xs font-medium text-blue-gray-600"
                           >
-                            {document_name}
+                            {" "}
+                            {deadline.toLocaleDateString()}
                           </Typography>
                         </td>
                         <td className={className}>
-                          <Typography
-                            variant="small"
-                            className="text-xs font-medium text-blue-gray-600"
-                          >
-                            {deadline.toLocaleDateString()} 
-                          </Typography>
+                          <div className="w-max">
+                            <Chip
+                              size="sm"
+                              variant="ghost"
+                              value={status}
+                              color={
+                                status === "received"
+                                  ? "green"
+                                  : status === "cancelled"
+                                  ? "red"
+                                  : status === "rejected"
+                                  ? "red"
+                                  : "amber"
+                              }
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <Tooltip content="View Request">
+                            <IconButton
+                              variant="text"
+                              onClick={() => moveRequest(id)}
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </IconButton>
+                          </Tooltip>
                         </td>
                       </tr>
                     );
-                  }
+                  },
                 )}
               </tbody>
             </table>
@@ -215,7 +377,7 @@ export function Home() {
             className="m-0 p-6"
           >
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Orders Overview
+              Recent Bottle Submission
             </Typography>
             <Typography
               variant="small"
@@ -260,7 +422,7 @@ export function Home() {
                     </Typography>
                   </div>
                 </div>
-              )
+              ),
             )}
           </CardBody>
         </Card>

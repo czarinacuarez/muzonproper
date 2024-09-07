@@ -5,17 +5,11 @@ import {
   CardHeader,
   CardBody,
   IconButton,
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Avatar,
+  Chip,
   Tooltip,
-  Progress,
   CardFooter,
   Button,
 } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "@/widgets/cards";
 import { StatisticsChart } from "@/widgets/charts";
 import {
@@ -26,26 +20,53 @@ import {
 } from "@/data";
 import {
   CheckCircleIcon,
+  CircleStackIcon,
   ClockIcon,
   EyeDropperIcon,
+  EyeIcon,
+  GifIcon,
+  GiftIcon,
   KeyIcon,
+  MinusCircleIcon,
+  PlusCircleIcon,
+  PrinterIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/solid";
 import { useUser } from "@/context/AuthContext";
 import { FirebaseFirestore } from "@/firebase";
-import { collection, onSnapshot, query, where, doc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  doc,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 export function UserHome() {
-  const { user } = useUser();
+  const { user, userVerify } = useUser();
   const [uid, setUid] = useState("");
-
-  const [totalBottles, setTotalBottles] = useState(0);
+  const navigate = useNavigate();
+  const [recentRequests, setRecentRequests] = useState([]);
+  const [mergedHistory, setMergedHistory] = useState([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [currentPoints, setCurrentPoints] = useState(0);
   const timestamp = new Date(); // Get current date and time
+  const truncate = (str, max) =>
+    str.length > max ? `${str.slice(0, max)}...` : str;
+
+  const moveRedeem = () => {
+    navigate(`/userdashboard/print`);
+  };
+
+  const moveRequest = (id) => {
+    navigate(`/userdashboard/request/${id}`);
+  };
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "Loading...";
 
-    // Convert to Date object if it's a timestamp string or number
     const date = new Date(timestamp);
 
     const options = {
@@ -68,8 +89,17 @@ export function UserHome() {
         FirebaseFirestore,
         "pointsReductionHistory",
       );
+      const pointsAddedRef = collection(
+        FirebaseFirestore,
+        "pointsAddedHistory",
+      );
       const pointsReductionQuery = query(
         pointsReductionRef,
+        where("userId", "==", userId),
+      );
+
+      const pointsAddedQuery = query(
+        pointsAddedRef,
         where("userId", "==", userId),
       );
 
@@ -92,9 +122,72 @@ export function UserHome() {
         setCurrentPoints(data?.points || 0); // Use default value if data is not available
       });
 
+      const requestRef = collection(FirebaseFirestore, "requests");
+      const requestQuery = query(
+        requestRef,
+        where("user_id", "==", userId), // Filter by user_id
+        orderBy("deadline", "desc"), // Order by deadline (most recent first)
+        limit(5), // Limit the results to 5 documents
+      );
+
+      const unsubscribeRequests = onSnapshot(requestQuery, (snapshot) => {
+        const recentRequests = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setRecentRequests(recentRequests);
+        console.log("Recent Requests:", recentRequests);
+      });
+
+      // Function to handle merging and updating state (sort by timestamp and limit to 5)
+      const mergeAndUpdateHistory = (newData) => {
+        setMergedHistory((prev) => {
+          const updated = [...prev, ...newData];
+          const unique = Array.from(
+            new Map(updated.map((item) => [item.id, item])).values(),
+          );
+          // Sort by timestamp in descending order and limit to 5 most recent
+          return unique
+            .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()) // Ensure timestamp is in milliseconds for sorting
+            .slice(0, 5);
+        });
+      };
+
+      // Listener for pointsAddedHistory
+      const unsubscribeAdded = onSnapshot(pointsAddedQuery, (snapshot) => {
+        const addedPoints = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          type: "added",
+          id: doc.id,
+          points: doc.data().points,
+          timestamp: doc.data().timestamp, // Ensure correct mapping of timestamp
+        }));
+
+        mergeAndUpdateHistory(addedPoints); // Merge added points
+      });
+
+      // Listener for pointsReductionHistory
+      const unsubscribeReduction = onSnapshot(
+        pointsReductionQuery,
+        (snapshot) => {
+          const reducedPoints = snapshot.docs.map((doc) => ({
+            ...doc.data(),
+            type: "reduced",
+            id: doc.id,
+            points: doc.data().points_deducted, // Correctly map points_deducted
+            timestamp: doc.data().timestamp, // Ensure correct mapping of timestamp
+          }));
+
+          mergeAndUpdateHistory(reducedPoints); // Merge reduced points
+        },
+      );
+
       return () => {
         unsubscribePointsReduction();
         unsubscribe();
+        unsubscribeRequests();
+        unsubscribeAdded();
+        unsubscribeReduction();
       };
     }
   }, [user?.id]);
@@ -105,13 +198,17 @@ export function UserHome() {
         <Card className="border border-blue-gray-100 shadow-sm">
           <CardHeader
             variant="gradient"
-            color="red"
+            color={userVerify ? "green" : "red"}
             floated={false}
             shadow={false}
             className="absolute grid h-12 w-12 place-items-center"
           >
-            <Tooltip content="Answer SK Profiling">
-              <IconButton className="bg-transparent">
+            <Tooltip
+              content={
+                userVerify ? "Re-answer SK Profiling" : "Answer SK Profiling"
+              }
+            >
+              <IconButton className="bg-transparent shadow-none">
                 <CheckCircleIcon className="h-6 w-6"></CheckCircleIcon>
               </IconButton>
             </Tooltip>
@@ -123,14 +220,16 @@ export function UserHome() {
             >
               Account Status
             </Typography>
-            <Typography variant="h4" color="red">
-              Not Verified
+            <Typography variant="h4" color={userVerify ? "green" : "red"}>
+              {userVerify ? "Verified" : "Not Verified"}
             </Typography>
           </CardBody>
           <CardFooter className="border-t border-blue-gray-50 p-4">
             <Typography className="font-normal text-blue-gray-600">
-              You must answer SK Profiling.{" "}
-              <strong className>Click on the check icon.</strong>
+              {userVerify
+                ? "Your account is verified."
+                : "You must answer SK Profiling. "}
+              {!userVerify && <strong>Click on the check icon.</strong>}
             </Typography>
           </CardFooter>
         </Card>
@@ -139,7 +238,7 @@ export function UserHome() {
           value={totalPoints}
           title="Total Bottles Submitted"
           color="gray"
-          icon={React.createElement(EyeDropperIcon, {
+          icon={React.createElement(GiftIcon, {
             className: "w-6 h-6 text-white",
           })}
           footer={
@@ -151,16 +250,19 @@ export function UserHome() {
             </Typography>
           }
         />
+
         <StatisticsCard
           value={currentPoints}
           title="Current Points"
           color="gray"
-          icon={React.createElement(EyeDropperIcon, {
+          icon={React.createElement(RocketLaunchIcon, {
             className: "w-6 h-6 text-white",
           })}
           footer={
             <div className="flex items-center justify-center">
-              <Button>Redeem Printing Rewards</Button>
+              <Button onClick={() => moveRedeem()}>
+                Redeem Printing Rewards
+              </Button>
             </div>
           }
         />
@@ -168,7 +270,7 @@ export function UserHome() {
           value={totalPoints}
           title="Total Points Redeemed"
           color="gray"
-          icon={React.createElement(EyeDropperIcon, {
+          icon={React.createElement(CircleStackIcon, {
             className: "w-6 h-6 text-white",
           })}
           footer={
@@ -179,7 +281,7 @@ export function UserHome() {
           }
         />
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
+      {/* <div className="mb-6 grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart
             key={props.title}
@@ -198,7 +300,7 @@ export function UserHome() {
             }
           />
         ))}
-      </div>
+      </div> */}
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="overflow-hidden border border-blue-gray-100 shadow-sm xl:col-span-2">
           <CardHeader
@@ -209,20 +311,20 @@ export function UserHome() {
           >
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-1">
-                Projects
+                Recent transaction
               </Typography>
               <Typography
                 variant="small"
                 className="flex items-center gap-1 font-normal text-blue-gray-600"
               >
-                <CheckCircleIcon
+                {/* <CheckCircleIcon
                   strokeWidth={3}
                   className="h-4 w-4 text-blue-gray-200"
                 />
-                <strong>30 done</strong> this month
+                <strong>30 done</strong> this month */}
               </Typography>
             </div>
-            <Menu placement="left-start">
+            {/* <Menu placement="left-start">
               <MenuHandler>
                 <IconButton size="sm" variant="text" color="blue-gray">
                   <EllipsisVerticalIcon
@@ -237,13 +339,13 @@ export function UserHome() {
                 <MenuItem>Another Action</MenuItem>
                 <MenuItem>Something else here</MenuItem>
               </MenuList>
-            </Menu>
+            </Menu> */}
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["companies", "members", "budget", "completion"].map(
+                  {["document name", "deadline", "status", "action"].map(
                     (el) => (
                       <th
                         key={el}
@@ -261,66 +363,57 @@ export function UserHome() {
                 </tr>
               </thead>
               <tbody>
-                {projectsTableData.map(
-                  ({ img, name, members, budget, completion }, key) => {
+                {recentRequests.map(
+                  ({ document_name, deadline, status, id }, key) => {
                     const className = `py-3 px-5 ${
-                      key === projectsTableData.length - 1
+                      key === recentRequests.length - 1
                         ? ""
                         : "border-b border-blue-gray-50"
                     }`;
 
                     return (
-                      <tr key={name}>
+                      <tr key={document_name}>
                         <td className={className}>
-                          <div className="flex items-center gap-4">
-                            <Avatar src={img} alt={name} size="sm" />
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-bold"
-                            >
-                              {name}
-                            </Typography>
-                          </div>
-                        </td>
-                        <td className={className}>
-                          {members.map(({ img, name }, key) => (
-                            <Tooltip key={name} content={name}>
-                              <Avatar
-                                src={img}
-                                alt={name}
-                                size="xs"
-                                variant="circular"
-                                className={`cursor-pointer border-2 border-white ${
-                                  key === 0 ? "" : "-ml-2.5"
-                                }`}
-                              />
-                            </Tooltip>
-                          ))}
+                          <Typography className="text-sm font-semibold text-blue-gray-600">
+                            {truncate(document_name, 25)}
+                          </Typography>
                         </td>
                         <td className={className}>
                           <Typography
                             variant="small"
                             className="text-xs font-medium text-blue-gray-600"
                           >
-                            {budget}
+                            {formatTimestamp(deadline.toDate())}{" "}
+                            {/* Convert Firestore Timestamp to Date */}
                           </Typography>
                         </td>
                         <td className={className}>
-                          <div className="w-10/12">
-                            <Typography
-                              variant="small"
-                              className="mb-1 block text-xs font-medium text-blue-gray-600"
-                            >
-                              {completion}%
-                            </Typography>
-                            <Progress
-                              value={completion}
-                              variant="gradient"
-                              color={completion === 100 ? "green" : "blue"}
-                              className="h-1"
+                          <div className="w-max">
+                            <Chip
+                              size="sm"
+                              variant="ghost"
+                              value={status}
+                              color={
+                                status === "received"
+                                  ? "green"
+                                  : status === "cancelled"
+                                  ? "red"
+                                  : status === "rejected"
+                                  ? "red"
+                                  : "amber"
+                              }
                             />
                           </div>
+                        </td>
+                        <td className={className}>
+                          <Tooltip content="View Request">
+                            <IconButton
+                              variant="text"
+                              onClick={() => moveRequest(id)}
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </IconButton>
+                          </Tooltip>
                         </td>
                       </tr>
                     );
@@ -338,53 +431,55 @@ export function UserHome() {
             className="m-0 p-6"
           >
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Orders Overview
+              Recent Points History
             </Typography>
             <Typography
               variant="small"
               className="flex items-center gap-1 font-normal text-blue-gray-600"
             >
-              <ArrowUpIcon
+              {/* <ArrowUpIcon
                 strokeWidth={3}
                 className="h-3.5 w-3.5 text-green-500"
               />
-              <strong>24%</strong> this month
+              <strong>24%</strong> this month */}
             </Typography>
           </CardHeader>
           <CardBody className="pt-0">
-            {ordersOverviewData.map(
-              ({ icon, color, title, description }, key) => (
-                <div key={title} className="flex items-start gap-4 py-3">
-                  <div
-                    className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
-                      key === ordersOverviewData.length - 1
-                        ? "after:h-0"
-                        : "after:h-4/6"
-                    }`}
-                  >
-                    {React.createElement(icon, {
-                      className: `!w-5 !h-5 ${color}`,
-                    })}
-                  </div>
-                  <div>
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="block font-medium"
-                    >
-                      {title}
-                    </Typography>
-                    <Typography
-                      as="span"
-                      variant="small"
-                      className="text-xs font-medium text-blue-gray-500"
-                    >
-                      {description}
-                    </Typography>
-                  </div>
+            {mergedHistory.map(({ type, points, timestamp }, index) => (
+              <div key={index} className="flex items-start gap-4 py-3">
+                <div
+                  className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
+                    index === mergedHistory.length - 1
+                      ? "after:h-0"
+                      : "after:h-4/6"
+                  }`}
+                >
+                  {type === "added" ? (
+                    <PlusCircleIcon className="!h-5 !w-5 text-green-500" />
+                  ) : (
+                    <MinusCircleIcon className="!h-5 !w-5 text-red-500" />
+                  )}
                 </div>
-              ),
-            )}
+                <div>
+                  <Typography
+                    variant="small"
+                    color={type === "added" ? "green" : "red"}
+                    className="block font-medium"
+                  >
+                    {type === "added"
+                      ? `${points} points added`
+                      : `${points} points redeemed`}
+                  </Typography>
+                  <Typography
+                    as="span"
+                    variant="small"
+                    className="text-xs font-medium text-blue-gray-500"
+                  >
+                    {formatTimestamp(timestamp.toDate())}
+                  </Typography>
+                </div>
+              </div>
+            ))}
           </CardBody>
         </Card>
       </div>
