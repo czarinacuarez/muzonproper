@@ -37,6 +37,7 @@ import {
   addDoc,
   collection,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { FirebaseFirestore } from "@/firebase";
@@ -85,12 +86,49 @@ export function Request() {
     try {
       const requestsDatas = doc(FirebaseFirestore, "requests", id);
 
+      const newMapId = doc(collection(FirebaseFirestore, "_")).id;
+      const notificationRef = doc(
+        FirebaseFirestore,
+        "notifications",
+        requestsInfo.user_id,
+      );
+      const docSnapshot = await getDoc(notificationRef);
+
       if (!accept && !printed && !received) {
         await updateDoc(requestsDatas, {
           status: "accepted",
           "admin_decision.accepted": true,
           "admin_decision.decision_date": serverTimestamp(),
         });
+
+        if (!docSnapshot.exists()) {
+          await setDoc(notificationRef, {
+            [`notification-${newMapId}`]: {
+              accepted: true,
+              rejected: false,
+              printed: false,
+              received: false,
+              transactionId: id,
+              timestamp: serverTimestamp(),
+              user: "Admin",
+              viewed: false,
+            },
+          });
+          console.log("Created new document for admin notifications");
+        } else {
+          await updateDoc(notificationRef, {
+            [`notification-${newMapId}`]: {
+              accepted: true,
+              rejected: false,
+              printed: false,
+              received: false,
+              transactionId: id,
+              timestamp: serverTimestamp(),
+              user: "Admin",
+              viewed: false,
+            },
+          });
+        }
       } else if (accept && !printed && !received) {
         try {
           const userPointsRef = doc(
@@ -134,11 +172,37 @@ export function Request() {
           "admin_decision.printed": true,
           "admin_decision.printed_date": serverTimestamp(),
         });
+
+        await updateDoc(notificationRef, {
+          [`notification-${newMapId}`]: {
+            accepted: false,
+            rejected: false,
+            printed: true,
+            received: false,
+            transactionId: id,
+            timestamp: serverTimestamp(),
+            user: "Admin",
+            viewed: false,
+          },
+        });
       } else if (accept && printed && !received) {
         await updateDoc(requestsDatas, {
           status: "received",
           "admin_decision.user_received": true,
           "admin_decision.user_received_date": serverTimestamp(),
+        });
+
+        await updateDoc(notificationRef, {
+          [`notification-${newMapId}`]: {
+            accepted: false,
+            rejected: false,
+            printed: false,
+            received: true,
+            transactionId: id,
+            timestamp: serverTimestamp(),
+            user: "Admin",
+            viewed: false,
+          },
         });
       }
     } catch (error) {
@@ -155,6 +219,43 @@ export function Request() {
         "admin_decision.rejected": true,
         "admin_decision.decision_date": serverTimestamp(),
       });
+
+      const newMapId = doc(collection(FirebaseFirestore, "_")).id;
+      const notificationRef = doc(
+        FirebaseFirestore,
+        "notifications",
+        requestsInfo.user_id,
+      );
+      const docSnapshot = await getDoc(notificationRef);
+
+      if (!docSnapshot.exists()) {
+        await setDoc(notificationRef, {
+          [`notification-${newMapId}`]: {
+            accepted: false,
+            rejected: false,
+            printed: false,
+            received: false,
+            transactionId: id,
+            timestamp: serverTimestamp(),
+            user: "Admin",
+            viewed: true,
+          },
+        });
+        console.log("Created new document for admin notifications");
+      } else {
+        await updateDoc(notificationRef, {
+          [`notification-${newMapId}`]: {
+            accepted: false,
+            rejected: false,
+            printed: false,
+            received: false,
+            transactionId: id,
+            timestamp: serverTimestamp(),
+            user: "Admin",
+            viewed: true,
+          },
+        });
+      }
 
       console.log("Document updated successfully");
     } catch (error) {

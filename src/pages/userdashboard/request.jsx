@@ -30,6 +30,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useParams } from "react-router-dom";
 import {
+  collection,
   doc,
   onSnapshot,
   serverTimestamp,
@@ -37,9 +38,11 @@ import {
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { FirebaseFirestore } from "@/firebase";
+import { useUser } from "@/context/AuthContext";
 
 export function UserRequest() {
   const { id } = useParams();
+  const { user } = useUser();
   const [orderData, setOrderData] = useState([]);
   const [users, setUsers] = useState(null);
   const [requestsInfo, setRequests] = useState(null);
@@ -74,6 +77,19 @@ export function UserRequest() {
   const handleCancel = async () => {
     try {
       const requestsDatas = doc(FirebaseFirestore, "requests", id);
+      const notificationRef = doc(FirebaseFirestore, "notifications", "admin");
+      const newMapId = doc(collection(FirebaseFirestore, "_")).id;
+
+      await updateDoc(notificationRef, {
+        [`notification-${newMapId}`]: {
+          request: false,
+          cancelled: true,
+          transactionId: id,
+          timestamp: serverTimestamp(),
+          user_id: user.uid,
+          viewed: false,
+        },
+      });
 
       await updateDoc(requestsDatas, {
         status: "cancelled",

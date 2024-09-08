@@ -34,6 +34,10 @@ import {
   Timestamp,
   serverTimestamp,
   onSnapshot,
+  doc,
+  updateDoc,
+  setDoc,
+  getDoc,
 } from "firebase/firestore";
 import { FirebaseStorage, FirebaseFirestore } from "../../firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -172,7 +176,8 @@ export function Redeem() {
       console.log("Download URL:", downloadURL);
 
       console.log("Adding document to Firestore...");
-      await addDoc(collection(FirebaseFirestore, "requests"), {
+
+      const docRef = await addDoc(collection(FirebaseFirestore, "requests"), {
         user_id: user.uid,
         document_name: fileName,
         deadline: formValues.deadline,
@@ -196,6 +201,37 @@ export function Redeem() {
         },
       });
       setNumPages(null);
+
+      const docId = docRef.id;
+      const newMapId = doc(collection(FirebaseFirestore, "_")).id;
+      const notificationRef = doc(FirebaseFirestore, "notifications", "admin");
+      const docSnapshot = await getDoc(notificationRef);
+
+      if (!docSnapshot.exists()) {
+        await setDoc(notificationRef, {
+          [`notification-${newMapId}`]: {
+            request: true,
+            cancelled: false,
+            transactionId: docId,
+            timestamp: serverTimestamp(),
+            user_id: user.uid,
+            viewed: false,
+          },
+        });
+        console.log("Created new document for admin notifications");
+      } else {
+        await updateDoc(notificationRef, {
+          [`notification-${newMapId}`]: {
+            request: true,
+            cancelled: false,
+            transactionId: docId,
+            timestamp: serverTimestamp(),
+            user_id: user.uid,
+            viewed: false,
+          },
+        });
+      }
+
       console.log("Document successfully written with file!");
     } catch (e) {
       console.error("Error:", e);

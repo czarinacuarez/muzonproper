@@ -1,5 +1,5 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { FirebaseAuth } from "../../firebase";
+import { FirebaseAuth, FirebaseFirestore } from "../../firebase";
 import {
   Navbar,
   Typography,
@@ -22,6 +22,7 @@ import {
   Bars3Icon,
   ArrowRightOnRectangleIcon,
   UserIcon,
+  HeartIcon,
 } from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
@@ -30,13 +31,15 @@ import {
 } from "@/context";
 import { useUser } from "../../context/AuthContext";
 import Generateqr from "@/pages/userdashboard/Generateqr";
+import { onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
-  const { userInfo } = useUser();
+  const { userInfo, user } = useUser();
   const navigate = useNavigate();
 
   const moveAccount = () => {
@@ -46,6 +49,79 @@ export function DashboardNavbar() {
   const moveProfile = () => {
     navigate(`/userdashboard/profile`);
   };
+
+  const moveRequest = async (id, notificationId, viewed) => {
+    try {
+      if (!viewed) {
+        const notificationRef = doc(
+          FirebaseFirestore,
+          "notifications",
+          user.uid,
+        );
+
+        await updateDoc(notificationRef, {
+          [`${notificationId}.viewed`]: true, // Dynamic path to the nested field
+        });
+      }
+
+      navigate(`/userdashboard/request/${id}`);
+    } catch (error) {
+      console.error("Error updating notification: ", error);
+    }
+  };
+  const [notifications, setNotifications] = useState([]);
+  const [unviewedCount, setUnviewedCount] = useState(0);
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "Loading...";
+
+    const date = new Date(timestamp.toDate()); // Convert Firestore Timestamp to JavaScript Date
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    };
+
+    return date.toLocaleString("en-US", options);
+  };
+  useEffect(() => {
+    if (!user?.uid) return; // Ensure user is available
+
+    const unsubscribe = onSnapshot(
+      doc(FirebaseFirestore, "notifications", user.uid), // Listen to notifications document for this user
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const notificationsMap = docSnapshot.data();
+          let count = 0;
+          const notificationData = [];
+
+          // Loop through the notifications map
+          Object.keys(notificationsMap).forEach((key) => {
+            const notification = notificationsMap[key];
+
+            if (notification.viewed === false) {
+              count += 1; // Increment count for unviewed notifications
+            }
+
+            // Add notification to array
+            notificationData.push({
+              ...notification,
+              id: key, // Use key as the notification ID
+            });
+          });
+
+          notificationData.sort((a, b) => b.timestamp - a.timestamp);
+
+          setUnviewedCount(count); // Update state with the unviewed notification count
+          setNotifications(notificationData); // Update the notifications state
+        }
+      },
+    );
+
+    return () => unsubscribe(); // Cleanup listener on component unmount
+  }, [user?.uid]);
 
   return (
     <Navbar
@@ -164,11 +240,16 @@ export function DashboardNavbar() {
           <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">
-                <BellIcon className="h-5 w-5 text-blue-gray-500" />
+                <BellIcon className="h-6 w-6 text-blue-gray-500" />
+                {unviewedCount > 0 && (
+                  <span className="absolute right-0 top-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 p-2 text-xs font-bold text-white">
+                    {unviewedCount}
+                  </span>
+                )}
               </IconButton>
             </MenuHandler>
             <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-3">
+              {/* <MenuItem className="flex items-center gap-3">
                 <Avatar
                   src="https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg"
                   alt="item-1"
@@ -215,8 +296,70 @@ export function DashboardNavbar() {
                     <ClockIcon className="h-3.5 w-3.5" /> 1 day ago
                   </Typography>
                 </div>
-              </MenuItem>
-              <MenuItem className="flex items-center gap-4">
+              </MenuItem> */}
+
+              {notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <MenuItem
+                    onClick={() =>
+                      moveRequest(
+                        notification.transactionId,
+                        notification.id,
+                        notification.viewed,
+                      )
+                    }
+                    key={notification.id}
+                    className="flex items-center gap-3"
+                  >
+                    <Avatar
+                      src="/images/unknown.jpg"
+                      alt="item-1"
+                      size="sm"
+                      variant="circular"
+                    />
+                    <div>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="mb-1 font-normal"
+                      >
+                        <strong>{notification.user}</strong>
+                        {` ${
+                          notification.accepted
+                            ? "has accepted your redeem request"
+                            : notification.rejected
+                            ? "has rejected your redeem request"
+                            : notification.printed
+                            ? "has printed your document. Kindly retrieve it"
+                            : notification.received
+                            ? "has already marked your request as completed"
+                            : ""
+                        }`}
+                      </Typography>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="flex items-center gap-1 text-xs font-normal opacity-60"
+                      >
+                        <ClockIcon className="h-3.5 w-3.5" />{" "}
+                        {formatTimestamp(notification.timestamp)}
+                      </Typography>
+                    </div>
+                    <HeartIcon
+                      className={`h-4 h-4 rounded-full ${
+                        notification.viewed ? "hidden" : " text-green-500"
+                      }`}
+                    ></HeartIcon>
+                  </MenuItem>
+                ))
+              ) : (
+                <Typography
+                  variant="small"
+                  color="blue-gray"
+                  className="font-normal"
+                ></Typography>
+              )}
+              {/* <MenuItem className="flex items-center gap-4">
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-tr from-blue-gray-800 to-blue-gray-900">
                   <CreditCardIcon className="h-4 w-4 text-white" />
                 </div>
@@ -236,7 +379,7 @@ export function DashboardNavbar() {
                     <ClockIcon className="h-3.5 w-3.5" /> 2 days ago
                   </Typography>
                 </div>
-              </MenuItem>
+              </MenuItem> */}
             </MenuList>
           </Menu>
           <IconButton
