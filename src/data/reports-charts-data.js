@@ -1,47 +1,47 @@
 import { chartsConfig } from "@/configs";
-import { fetchTransaction } from "./fetchData";
-import { FetchRedeemedData } from "./DeductionReport";
-import { FetchRequestFile } from "./RequestFile";
+import { fetchMonthlyBottles } from "./fetchMonthlyBottles";
+import { fetchYearlyTotals } from "./fetchYearlyBottles";
+import { fetchMonthlyRequests } from "./fetchMonthlyRedeemed";
 
 const getWebsiteViewsChartData = async () => {
   try {
-    const data = await fetchTransaction();
+    const data = await fetchMonthlyBottles();
     return data;
   } catch (error) {
     console.error("Error fetching chart data: ", error);
-    return [0, 0, 0, 0, 0, 0, 0];
+    return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   }
 };
 
 const getRedeemedData = async () => {
   try {
-    const redeemedData = await FetchRedeemedData();
+    const redeemedData = await fetchYearlyTotals();
     return redeemedData;
   } catch (error) {
     console.error("Error fetching chart data: ", error);
-    return [0, 0, 0, 0, 0, 0, 0];
+    return [0, 0];
   }
 };
 
 const getRequestsData = async () => {
   try {
-    const requestData = await FetchRequestFile();
+    const requestData = await fetchMonthlyRequests();
     return requestData;
   } catch (error) {
     console.error("Error fetching chart data: ", error);
-    return [0, 0, 0, 0, 0, 0, 0];
+    return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   }
 };
 
 const getWebsiteViewsChart = async () => {
-  const data = await getWebsiteViewsChartData();
+  const data = await getWebsiteViewsChartData(); // This should return an array of monthly data
   return {
     type: "line",
     height: 220,
     series: [
       {
         name: "Total Bottles",
-        data: data,
+        data: data, // This should be an array with 12 values, one for each month
       },
     ],
     options: {
@@ -55,7 +55,20 @@ const getWebsiteViewsChart = async () => {
       },
       xaxis: {
         ...chartsConfig.xaxis,
-        categories: ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"],
+        categories: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ],
       },
     },
   };
@@ -64,26 +77,29 @@ const getWebsiteViewsChart = async () => {
 const getRedeemedChart = async () => {
   const redeemedData = await getRedeemedData();
   return {
-    type: "line",
+    type: "bar", // Set chart type to 'bar'
     height: 220,
     series: [
       {
-        name: "Total Points",
+        name: "Total Bottles",
         data: redeemedData,
       },
     ],
     options: {
       ...chartsConfig,
-      colors: ["#0288d1"],
-      stroke: {
-        lineCap: "round",
-      },
-      markers: {
-        size: 5,
+      colors: ["#f57c00"], // Color for the bar chart
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          horizontal: false,
+        },
       },
       xaxis: {
         ...chartsConfig.xaxis,
-        categories: ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"],
+        categories: ["Last Year", "This Year"],
+      },
+      yaxis: {
+        title: {},
       },
     },
   };
@@ -111,7 +127,20 @@ const getRequestChart = async () => {
       },
       xaxis: {
         ...chartsConfig.xaxis,
-        categories: ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"],
+        categories: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ],
       },
     },
   };
@@ -127,7 +156,7 @@ const getRequestChart = async () => {
 //   ],
 // };
 
-export const statisticsChartsData = async () => {
+export const reportsChartsData = async () => {
   const websiteViewsChart = await getWebsiteViewsChart();
   const dailyRedeemerdRewards = await getRedeemedChart();
   const dailyRequestRewards = await getRequestChart();
@@ -135,26 +164,26 @@ export const statisticsChartsData = async () => {
   return [
     {
       color: "white",
-      title: "Bottle Submission",
-      description: "Overview of Bottle Per Day",
-      footer: "Transaction Every Week",
+      title: "Monthly Bottle Submission",
+      description: "Overview of Bottle Per Month",
+      footer: "Transaction Every Month",
       chart: websiteViewsChart,
     },
     {
       color: "white",
-      title: "Points Redeemed",
-      description: "Overview of Points Redeemed Per Day",
-      footer: "Transaction Per Week",
+      title: "Yearly Bottle Submission",
+      description: "Overview of Bottles Submitted Last & This Year",
+      footer: "Transaction Per Year",
       chart: dailyRedeemerdRewards,
     },
     {
       color: "white",
-      title: "User Redeem Requests",
-      description: "Overview of User's Reward Request Per Day",
-      footer: "Transaction Per Week",
+      title: "User Points Redeem",
+      description: "Overview of All User's Monthly Points Redeemed",
+      footer: "Transaction Per Month as of this year",
       chart: dailyRequestRewards,
     },
   ];
 };
 
-export default statisticsChartsData;
+export default reportsChartsData;

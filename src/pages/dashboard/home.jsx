@@ -31,6 +31,8 @@ import {
   GifIcon,
   GiftIcon,
   GlobeAsiaAustraliaIcon,
+  MinusCircleIcon,
+  PlusCircleIcon,
   UserIcon,
 } from "@heroicons/react/24/solid";
 import fetchLatestRequests from "@/data/LatestRequestFile";
@@ -38,6 +40,8 @@ import { useNavigate } from "react-router-dom";
 import { FirebaseFirestore } from "@/firebase";
 import {
   collection,
+  doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
@@ -47,18 +51,38 @@ import {
 export function Home() {
   const [chartsData, setChartsData] = useState([]);
   const [projectsTableData, setProjectsTableData] = useState([]);
+  const [mergedHistory, setMergedHistory] = useState([]);
+
   const navigate = useNavigate();
   const truncate = (str, max) =>
     str.length > max ? `${str.slice(0, max)}...` : str;
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "Loading...";
+
+    const date = new Date(timestamp);
+
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true, // Use 12-hour time format with AM/PM
+    };
+
+    return date.toLocaleString("en-US", options);
+  };
   const moveRequest = (id) => {
     navigate(`/dashboard/request/${id}`);
   };
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [totalPointsDeducted, setTotalPointsDeducted] = useState(0);
   const [statusCount, setStatusCount] = useState(0);
+  const [bottlesCount, setBottlesCount] = useState(0);
 
   useEffect(() => {
+    // Exclude certain statuses for requests query
     const excludedStatuses = ["received", "rejected", "cancelled"];
 
     const requestsQuery = query(
@@ -66,13 +90,13 @@ export function Home() {
       where("status", "not-in", excludedStatuses),
     );
 
-    // Real-time listener
+    // Real-time listener for requests
     const unsubscribeRequests = onSnapshot(requestsQuery, (snapshot) => {
-      // Count the number of documents that match the query
       const count = snapshot.size;
       setStatusCount(count);
     });
 
+    // Get the start and end of the current month for points queries
     const startOfMonth = new Date(
       new Date().getFullYear(),
       new Date().getMonth(),
@@ -94,33 +118,53 @@ export function Home() {
       orderBy("timestamp", "desc"),
     );
 
-    // Real-time listener
+    // Real-time listener for points reduction history
     const unsubscribePointsReduction = onSnapshot(
       pointsReductionQuery,
       (snapshot) => {
         let total = 0;
-
         snapshot.forEach((doc) => {
           const data = doc.data();
-          // Add up all points_deducted
           total += data.points_deducted;
         });
-
-        // Update state with the total points deducted
         setTotalPointsDeducted(total);
       },
     );
-    const q = query(
+
+    const bottlesAddedQuery = query(
+      collection(FirebaseFirestore, "pointsAddedHistory"),
+      where("timestamp", ">=", startOfMonth),
+      where("timestamp", "<=", endOfMonth),
+      orderBy("timestamp", "desc"),
+    );
+
+    const unsubscribeBottlesAdded = onSnapshot(
+      bottlesAddedQuery,
+      (snapshot) => {
+        let total = 0;
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          total += data.totalBottles;
+        });
+        setBottlesCount(total);
+      },
+    );
+
+    // Query for verified users
+    const verifiedUsersQuery = query(
       collection(FirebaseFirestore, "users"),
       where("verified", "==", true),
     );
 
-    // Set up the real-time listener
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      // Update the count based on the number of documents in the querySnapshot
-      setVerifiedCount(querySnapshot.size);
-    });
+    // Real-time listener for verified users
+    const unsubscribeVerifiedUsers = onSnapshot(
+      verifiedUsersQuery,
+      (snapshot) => {
+        setVerifiedCount(snapshot.size);
+      },
+    );
 
+    // Fetch statistics chart data
     const fetchData = async () => {
       try {
         const data = await statisticsChartsData();
@@ -130,14 +174,105 @@ export function Home() {
       }
     };
 
-    fetchData();
+    const getUserNameById = async (userId) => {
+      console.log("Fetching user data for ID:", userId); // Log userId
+      if (!userId) {
+        console.error("User ID is undefined or null");
+        return "Unknown User";
+      }
+      try {
+        const userDocRef = doc(FirebaseFirestore, "users", userId);
+        console.log("User Document Reference:", userDocRef); // Log doc reference
+        const userDoc = await getDoc(userDocRef);
 
+        if (userDoc.exists()) {
+          const { firstname, lastname } = userDoc.data();
+          const userDisplay = `${firstname || ""} ${lastname || ""}`.trim();
+          return userDisplay || "Unknown User";
+        }
+
+        return "Unknown User";
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        return "Unknown User";
+      }
+    };
+
+    const mergeAndUpdateHistory = async (newData, type) => {
+      console.log("New Data:", newData); // Log newData to check userId presence
+      const historyWithUserNames = await Promise.all(
+        newData.map(async (item) => {
+          console.log("Processing item:", item); // Log item to check userId
+          const userName = await getUserNameById(item.userId); // Fetch user name
+          return {
+            ...item,
+            type, // Set the type to "added" or "redeemed"
+            message:
+              type === "added"
+                ? `${userName} submitted ${item.totalBottles || 0} bottles`
+                : `${userName} redeemed ${item.points_deducted || 0} points`,
+          };
+        }),
+      );
+
+      // Update state as before
+      setMergedHistory((prev) => {
+        const updated = [...prev, ...historyWithUserNames];
+        const unique = Array.from(
+          new Map(updated.map((item) => [item.id, item])).values(),
+        );
+        // Sort by timestamp in descending order and limit to 5 most recent
+        return unique
+          .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())
+          .slice(0, 5);
+      });
+    };
+
+    // Query for points added (ensure the correct setup for this query)
+    const pointsAddedQuery = query(
+      collection(FirebaseFirestore, "pointsAddedHistory"),
+      orderBy("timestamp", "desc"),
+    );
+
+    const unsubscribePointsAdded = onSnapshot(pointsAddedQuery, (snapshot) => {
+      const pointsAddedData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        pointsAdded: doc.data().points_added, // Ensure correct field name
+        userId: doc.data().userId, // Ensure correct field name
+        timestamp: doc.data().timestamp, // Ensure correct field name
+      }));
+
+      mergeAndUpdateHistory(pointsAddedData, "added");
+    });
+
+    const unsubscribePointsReductionUser = onSnapshot(
+      pointsReductionQuery,
+      (snapshot) => {
+        const pointsReductionData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          points_deducted: doc.data().points_deducted, // Ensure correct field name
+          userId: doc.data().userId, // Ensure correct field name
+          timestamp: doc.data().timestamp, // Ensure correct field name
+        }));
+
+        mergeAndUpdateHistory(pointsReductionData, "redeemed");
+      },
+    );
+
+    fetchData(); // Fetch data on mount
+
+    // Cleanup all listeners when the component unmounts
     return () => {
       unsubscribeRequests();
       unsubscribePointsReduction();
-      unsubscribe();
+      unsubscribeBottlesAdded();
+      unsubscribeVerifiedUsers();
+      unsubscribePointsAdded();
+      unsubscribePointsReductionUser();
     };
-  }, []);
+  }, []); // Empty dependency array ensures the effect runs once
 
   useEffect(() => {
     const loadData = async () => {
@@ -174,13 +309,13 @@ export function Home() {
           })}
           footer={
             <Typography className="text-sm font-normal text-blue-gray-600">
-              Requests awaiting admin approval
+              Current no. of requests awaiting for admin's approval
             </Typography>
           }
         />
 
         <StatisticsCard
-          value={verifiedCount}
+          value={bottlesCount}
           title="Accumulated Bottles"
           color="gray"
           icon={React.createElement(GlobeAsiaAustraliaIcon, {
@@ -188,7 +323,7 @@ export function Home() {
           })}
           footer={
             <Typography className="text-sm font-normal text-blue-gray-600">
-              Overall total bottles collected
+              Total bottles collected this month
             </Typography>
           }
         />
@@ -377,48 +512,52 @@ export function Home() {
             className="m-0 p-6"
           >
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Recent Bottle Submission
+              Recent Points History
             </Typography>
             <Typography
               variant="small"
               className="flex items-center gap-1 font-normal text-blue-gray-600"
             >
-              <ArrowUpIcon
-                strokeWidth={3}
-                className="h-3.5 w-3.5 text-green-500"
-              />
-              <strong>24%</strong> this month
+              {/* Optionally, display other stats here */}
             </Typography>
           </CardHeader>
           <CardBody className="pt-0">
-            {ordersOverviewData.map(
-              ({ icon, color, title, description }, key) => (
-                <div key={title} className="flex items-start gap-4 py-3">
+            {mergedHistory.map(
+              ({ message, points, timestamp, type }, index) => (
+                <div key={index} className="flex items-start gap-4 py-3">
                   <div
                     className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
-                      key === ordersOverviewData.length - 1
+                      index === mergedHistory.length - 1
                         ? "after:h-0"
                         : "after:h-4/6"
                     }`}
                   >
-                    {React.createElement(icon, {
-                      className: `!w-5 !h-5 ${color}`,
-                    })}
+                    {type === "added" ? (
+                      <PlusCircleIcon className="!h-5 !w-5 text-green-500" />
+                    ) : (
+                      <MinusCircleIcon className="!h-5 !w-5 text-red-500" />
+                    )}
                   </div>
                   <div>
                     <Typography
                       variant="small"
-                      color="blue-gray"
+                      color={type === "added" ? "green" : "red"}
                       className="block font-medium"
                     >
-                      {title}
+                      {message
+                        ? message
+                        : `${points || 0} points ${
+                            type === "added" ? "added" : "redeemed"
+                          }`}
                     </Typography>
                     <Typography
                       as="span"
                       variant="small"
                       className="text-xs font-medium text-blue-gray-500"
                     >
-                      {description}
+                      {timestamp
+                        ? formatTimestamp(timestamp.toDate())
+                        : "No timestamp"}
                     </Typography>
                   </div>
                 </div>
