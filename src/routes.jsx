@@ -8,12 +8,14 @@ import {
   BanknotesIcon,
   ChartBarSquareIcon,
   UserGroupIcon,
+  EyeDropperIcon,
+  PrinterIcon,
 } from "@heroicons/react/24/solid";
 import {
   Home,
   Profile,
   Tables,
-  Notifications,
+  PointsHistory,
   Transactions,
   Reports,
   RegisteredUsers,
@@ -36,8 +38,14 @@ export const routes = [
         path: "/home",
         element: <Home />,
       },
+      // {
+      //   icon: <BanknotesIcon {...icon} />,
+      //   name: "Points History",
+      //   path: "/points",
+      //   element: <PointsHistory />,
+      // },
       {
-        icon: <BanknotesIcon {...icon} />,
+        icon: <PrinterIcon {...icon} />,
         name: "Print Rewards",
         path: "/print-requests",
         element: <Transactions />,

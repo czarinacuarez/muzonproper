@@ -145,11 +145,13 @@ export function Accounts() {
         <form onSubmit={handlePasswordUpdate}>
           <CardBody className="flex flex-col gap-4 p-4">
             <div>
-              <Typography>Change Password</Typography>
-              <Typography>Update your password below</Typography>
+              <Typography variant="small" className="font-semibold">
+                Change Password. Update your password below
+              </Typography>
             </div>
             <Input
               label="Current Password"
+              color="green"
               onChange={handleInputChange}
               name="password"
               size="lg"
@@ -167,6 +169,7 @@ export function Accounts() {
             />
             <Input
               label="New Password"
+              color="green"
               onChange={handleInputChange}
               name="newPassword"
               size="lg"
@@ -183,6 +186,7 @@ export function Accounts() {
               }
             />
             <Input
+              color="green"
               label="Confirm New Password"
               onChange={handleInputChange}
               name="confirmPassword"
@@ -200,7 +204,9 @@ export function Accounts() {
               }
             />
             <div>
-              <Button type="submit">Change Password</Button>
+              <Button color="green" type="submit">
+                Change Password
+              </Button>
             </div>
           </CardBody>
         </form>
@@ -221,14 +227,16 @@ export function Accounts() {
         <form onSubmit={handleEmailUpdate}>
           <CardBody className="flex flex-col gap-4 p-4">
             <div>
-              <Typography>Change Email</Typography>
-              <Typography>Update your email below</Typography>
+              <Typography variant="small" className="font-semibold">
+                Change email. Update your email below
+              </Typography>
             </div>
             <Input
               label="Current Email"
               onChange={handleInputChange}
               name="email"
               size="lg"
+              color="green"
               required
               type="email"
             />
@@ -236,6 +244,7 @@ export function Accounts() {
               label="Password"
               onChange={handleInputChange}
               name="password"
+              color="green"
               size="lg"
               required
               type="password"
@@ -245,11 +254,14 @@ export function Accounts() {
               onChange={handleInputChange}
               name="newEmail"
               size="lg"
+              color="green"
               required
               type="email"
             />
             <div>
-              <Button type="submit">Change Email</Button>
+              <Button color="green" type="submit">
+                Change Email
+              </Button>
             </div>
           </CardBody>
         </form>

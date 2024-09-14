@@ -6,6 +6,8 @@ import {
   PencilIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/solid";
+import * as XLSX from "xlsx"; // Import xlsx for Excel export
+
 import {
   Card,
   CardHeader,
@@ -41,8 +43,40 @@ export function RegisteredUsers() {
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const navigate = useNavigate();
 
+  const exportToExcel = () => {
+    const usersToExport = filteredUsers.map((user, index) => ({
+      "User No.": index + 1, // Start numbering from 1
+      "Last Name": user.lastname || "N/A",
+      "First Name": user.firstname || "N/A",
+      Verified: user.verified ? "Verified" : "Not Verified", // Conditional logic for verification
+      Email: user.email || "N/A",
+      "Phone no.": user.phone || "N/A", // Adjust field according to your data
+      "Civil Status": user.civilStatus || "N/A",
+      Gender: user.gender || "N/A",
+      "Age Group": user.ageGroup || "N/A",
+      Area: user.area || "N/A",
+      Barangay: user.barangay || "N/A",
+      City: user.city || "N/A",
+      Province: user.province || "N/A",
+      Region: user.region || "N/A",
+    }));
+
+    console.log(usersToExport); // Ensure usersToExport is correctly populated
+
+    const worksheet = XLSX.utils.json_to_sheet(usersToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registered Users");
+
+    // Attempt to write and download the Excel file
+    XLSX.writeFile(workbook, "RegisteredUsers.xlsx");
+  };
+
   const moveRequest = (id) => {
-    navigate(`/dashboard/profile/${id}`);
+    if (id) {
+      navigate(`/dashboard/profile/${id}`);
+    } else {
+      console.error("User ID is undefined!");
+    }
   };
 
   function convertToTitleCase(text) {
@@ -53,16 +87,21 @@ export function RegisteredUsers() {
       .join(" ");
   }
 
+  const handleClick = () => {
+    console.log("Button clicked!");
+  };
+
   useEffect(() => {
     const usersCollection = collection(FirebaseFirestore, "users");
     const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
       const usersData = snapshot.docs
         .map((doc) => ({
           ...doc.data(),
-          id: doc.id,
+          id: doc.id, // This ensures each user has an `id`
         }))
         .filter((user) => user.type !== "admin");
       setUsers(usersData);
+      console.log(usersData);
     });
 
     return () => unsubscribe();
@@ -85,7 +124,7 @@ export function RegisteredUsers() {
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
             <div>
-              <Typography variant="h5" color="blue-gray">
+              <Typography variant="h5" color="green">
                 Users List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
@@ -113,17 +152,37 @@ export function RegisteredUsers() {
                   onChange={(e) => setSearchQuery(e.target.value)} // Update search query
                 />
               </div>
-              <Button className="flex w-full items-center gap-3" size="sm">
+              <Button
+                onClick={exportToExcel}
+                color="green"
+                className="flex w-full items-center gap-3"
+                size="sm"
+              >
                 <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" />{" "}
                 Download
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-x-scroll px-0">
+        <CardBody className="overflow-x-auto px-0">
           <table className="mt-4 w-full min-w-max table-auto text-left">
             <thead>
-              <tr>{/* Render your table headers here */}</tr>
+              <tr>
+                {TABLE_HEAD.map((head) => (
+                  <th
+                    key={head}
+                    className="border-b border-blue-gray-50 px-5 py-3 text-left"
+                  >
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="text-[11px] font-bold uppercase text-blue-gray-400"
+                    >
+                      {head}
+                    </Typography>
+                  </th>
+                ))}
+              </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user, index) => {
@@ -147,7 +206,7 @@ export function RegisteredUsers() {
                             color="blue-gray"
                             className="font-semibold"
                           >
-                            {user.firstname}
+                            {user.firstname} {user.lastname}
                           </Typography>
                           <Typography className="text-xs font-normal text-blue-gray-500">
                             {user.email}
@@ -169,7 +228,7 @@ export function RegisteredUsers() {
                     </td>
                     <td className={classes}>
                       <Typography className="text-sm font-normal text-blue-gray-600">
-                        {user.id}
+                        {user.phone}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -205,7 +264,7 @@ export function RegisteredUsers() {
           </table>
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
+          {/* <Typography variant="small" color="blue-gray" className="font-normal">
             Page 1 of 10
           </Typography>
           <div className="flex gap-2">
@@ -215,7 +274,7 @@ export function RegisteredUsers() {
             <Button variant="outlined" size="sm">
               Next
             </Button>
-          </div>
+          </div> */}
         </CardFooter>
       </Card>
     </div>

@@ -54,7 +54,6 @@ export function UserAccount() {
     updateDoc(userDocRef, {
       lastname: formValues.lastname,
       firstname: formValues.firstname,
-      email: formValues.email,
       area: formValues.area,
       gender: formValues.gender,
       civilStatus: formValues.civilStatus,

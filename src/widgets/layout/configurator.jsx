@@ -47,17 +47,17 @@ export function Configurator() {
   const [stars, setStars] = React.useState(0);
 
   const sidenavColors = {
-    white: "from-gray-100 to-gray-100 border-gray-200",
-    dark: "from-black to-black border-gray-200",
     green: "from-green-400 to-green-600",
-    orange: "from-orange-400 to-orange-600",
-    red: "from-red-400 to-red-600",
-    pink: "from-pink-400 to-pink-600",
+    "light-green": "from-light-green-400 to-light-green-600",
+    lime: "from-lime-400 to-lime-600",
+    teal: "from-teal-400 to-teal-600",
+    cyan: "from-cyan-100 to-cyan-100 border-cyan-200",
   };
 
   React.useEffect(() => {
+    setSidenavColor(dispatch, "green");
     const stars = fetch(
-      "https://api.github.com/repos/creativetimofficial/material-tailwind-dashboard-react"
+      "https://api.github.com/repos/creativetimofficial/material-tailwind-dashboard-react",
     )
       .then((response) => response.json())
       .then((data) => setStars(formatNumber(data.stargazers_count, 1)));
@@ -65,13 +65,13 @@ export function Configurator() {
 
   return (
     <aside
-      className={`fixed top-0 right-0 z-50 h-screen w-96 bg-white px-2.5 shadow-lg transition-transform duration-300 ${
+      className={`fixed right-0 top-0 z-50 h-screen w-96 bg-white px-2.5 shadow-lg transition-transform duration-300 ${
         openConfigurator ? "translate-x-0" : "translate-x-96"
       }`}
     >
-      <div className="flex items-start justify-between px-6 pt-8 pb-6">
+      <div className="flex items-start justify-between px-6 pb-6 pt-8">
         <div>
-          <Typography variant="h5" color="blue-gray">
+          <Typography variant="h5" color="green">
             Dashboard Configurator
           </Typography>
           <Typography className="font-normal text-blue-gray-600">
@@ -86,7 +86,7 @@ export function Configurator() {
           <XMarkIcon strokeWidth={2.5} className="h-5 w-5" />
         </IconButton>
       </div>
-      <div className="py-4 px-6">
+      <div className="px-6 py-4">
         <div className="mb-12">
           <Typography variant="h6" color="blue-gray">
             Sidenav Colors
@@ -114,18 +114,21 @@ export function Configurator() {
           </Typography>
           <div className="mt-3 flex items-center gap-2">
             <Button
+              color={sidenavType === "dark" ? "green" : "blue-gray"}
               variant={sidenavType === "dark" ? "gradient" : "outlined"}
               onClick={() => setSidenavType(dispatch, "dark")}
             >
               Dark
             </Button>
-            <Button
+            {/* <Button
+              color={sidenavType === "transparent" ? "green" : "blue-gray"}
               variant={sidenavType === "transparent" ? "gradient" : "outlined"}
               onClick={() => setSidenavType(dispatch, "transparent")}
             >
               Transparent
-            </Button>
+            </Button> */}
             <Button
+              color={sidenavType === "white" ? "green" : "blue-gray"}
               variant={sidenavType === "white" ? "gradient" : "outlined"}
               onClick={() => setSidenavType(dispatch, "white")}
             >
@@ -146,10 +149,7 @@ export function Configurator() {
             />
           </div>
           <hr />
-         
-        
         </div>
-     
       </div>
     </aside>
   );

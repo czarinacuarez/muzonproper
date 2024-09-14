@@ -303,7 +303,7 @@ export function Home() {
         <StatisticsCard
           value={statusCount}
           title="Pending Requests"
-          color="gray"
+          color="green"
           icon={React.createElement(EnvelopeIcon, {
             className: "w-6 h-6 text-white",
           })}
@@ -317,7 +317,7 @@ export function Home() {
         <StatisticsCard
           value={bottlesCount}
           title="Accumulated Bottles"
-          color="gray"
+          color="green"
           icon={React.createElement(GlobeAsiaAustraliaIcon, {
             className: "w-6 h-6 text-white",
           })}
@@ -331,7 +331,7 @@ export function Home() {
         <StatisticsCard
           value={totalPointsDeducted}
           title="Points Redeemed"
-          color="gray"
+          color="green"
           icon={React.createElement(GiftIcon, {
             className: "w-6 h-6 text-white",
           })}
@@ -372,7 +372,7 @@ export function Home() {
             className="m-0 flex items-center justify-between p-6"
           >
             <div>
-              <Typography variant="h6" color="blue-gray" className="mb-1">
+              <Typography variant="h5" color="green" className="mb-1">
                 Latest Request
               </Typography>
               <Typography
@@ -383,7 +383,7 @@ export function Home() {
                   strokeWidth={3}
                   className="h-4 w-4 text-blue-gray-200"
                 />
-                1-5
+                List of recent rewards request.
               </Typography>
             </div>
             <Menu placement="left-start">
@@ -447,7 +447,7 @@ export function Home() {
                       <tr key={name}>
                         <td className={className}>
                           <div className="flex items-center gap-4">
-                            <Typography className="text-sm font-semibold text-blue-gray-600">
+                            <Typography className="text-sm font-semibold text-blue-gray-500">
                               {firstname} {lastname}
                             </Typography>
                           </div>
@@ -511,7 +511,7 @@ export function Home() {
             color="transparent"
             className="m-0 p-6"
           >
-            <Typography variant="h6" color="blue-gray" className="mb-2">
+            <Typography variant="h5" color="green" className="mb-2">
               Recent Points History
             </Typography>
             <Typography
@@ -535,13 +535,13 @@ export function Home() {
                     {type === "added" ? (
                       <PlusCircleIcon className="!h-5 !w-5 text-green-500" />
                     ) : (
-                      <MinusCircleIcon className="!h-5 !w-5 text-red-500" />
+                      <MinusCircleIcon className="!h-5 !w-5 text-blue-gray-500" />
                     )}
                   </div>
                   <div>
                     <Typography
                       variant="small"
-                      color={type === "added" ? "green" : "red"}
+                      color={type === "added" ? "green" : "blue-gray"}
                       className="block font-medium"
                     >
                       {message

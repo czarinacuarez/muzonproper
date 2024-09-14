@@ -98,19 +98,19 @@ export function SignUp() {
     <section className="m-8 flex">
       <div className="hidden h-full w-2/5 lg:block">
         <img
-          src="/img/pattern.png"
+          src="/img/greenpattern2.png"
           className="h-full w-full rounded-3xl object-cover"
         />
       </div>
       <div className="flex w-full flex-col items-center justify-center lg:w-3/5">
         <div className="text-center">
-          <Typography variant="h2" className="mb-4 font-bold">
+          <Typography variant="h2" color="green" className="mb-4 font-bold">
             Join Us Today
           </Typography>
           <Typography
             variant="paragraph"
             color="blue-gray"
-            className="text-lg font-normal"
+            className="text-base font-normal"
           >
             Enter your details to register
           </Typography>
@@ -121,6 +121,7 @@ export function SignUp() {
         >
           <div className="mb-4 flex flex-col gap-6">
             <Input
+              color="green"
               label="Email"
               onChange={handleInputChange}
               name="email"
@@ -131,6 +132,7 @@ export function SignUp() {
           </div>
           <div className="mb-4 flex flex-col gap-6">
             <Input
+              color="green"
               label="Password"
               onChange={handleInputChange}
               name="password"
@@ -150,6 +152,7 @@ export function SignUp() {
           </div>
           <div className="mb-4 flex flex-col gap-6">
             <Input
+              color="green"
               label="Phone Number"
               onChange={handleInputChange}
               name="phone"
@@ -163,6 +166,7 @@ export function SignUp() {
           <div className="grid grid-cols-1  md:grid-cols-2  md:gap-3">
             <div className="mb-4 flex flex-col gap-6">
               <Input
+                color="green"
                 label="Last Name"
                 onChange={handleInputChange}
                 name="lastname"
@@ -173,6 +177,7 @@ export function SignUp() {
             </div>
             <div className="mb-4 flex flex-col gap-6">
               <Input
+                color="green"
                 label="First Name"
                 onChange={handleInputChange}
                 name="firstname"
@@ -185,6 +190,7 @@ export function SignUp() {
           <div className="grid grid-cols-1  md:grid-cols-2  md:gap-3">
             <div className="mb-4 flex flex-col gap-6">
               <Select
+                color="green"
                 value={formValues.gender}
                 onChange={(value) => handleSelectChange(value, "gender")}
                 size="lg"
@@ -202,6 +208,7 @@ export function SignUp() {
                 onChange={(value) => handleSelectChange(value, "civilStatus")}
                 size="lg"
                 required
+                color="green"
                 name="civilStatus"
                 label="Civil Status"
               >
@@ -218,6 +225,7 @@ export function SignUp() {
             <div className="mb-4 flex flex-col gap-6">
               <Select
                 name="youth"
+                color="green"
                 onChange={(value) => handleSelectChange(value, "youth")}
                 size="lg"
                 required
@@ -235,6 +243,7 @@ export function SignUp() {
             <div className="mb-4 flex flex-col gap-6">
               <Select
                 name="ageGroup"
+                color="green"
                 value={formValues.ageGroup}
                 onChange={(value) => handleSelectChange(value, "ageGroup")}
                 size="lg"
@@ -253,6 +262,7 @@ export function SignUp() {
               onChange={(value) => handleSelectChange(value, "area")}
               size="lg"
               required
+              color="green"
               label="Area"
             >
               <Option value="abandoned-road">Abandoned Road</Option>
@@ -297,7 +307,7 @@ export function SignUp() {
             }
             containerProps={{ className: "-ml-2.5" }}
           /> */}
-          <Button type="submit" className="mt-6" fullWidth>
+          <Button type="submit" color="green" className="mt-6" fullWidth>
             Register Now
           </Button>
           {/* <div className="space-y-4 mt-8">

@@ -46,7 +46,7 @@ const getWebsiteViewsChart = async () => {
     ],
     options: {
       ...chartsConfig,
-      colors: ["#FFF231"],
+      colors: ["#81c784"],
       stroke: {
         lineCap: "round",
       },
@@ -87,7 +87,7 @@ const getRedeemedChart = async () => {
     ],
     options: {
       ...chartsConfig,
-      colors: ["#f57c00"], // Color for the bar chart
+      colors: ["#aed581"], // Color for the bar chart
       plotOptions: {
         bar: {
           borderRadius: 4,
@@ -118,7 +118,7 @@ const getRequestChart = async () => {
     ],
     options: {
       ...chartsConfig,
-      colors: ["#388e3c"],
+      colors: ["#81c784"],
       stroke: {
         lineCap: "round",
       },

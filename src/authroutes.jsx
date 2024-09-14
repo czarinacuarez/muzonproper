@@ -6,7 +6,15 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, Transactions, Reports, RegisteredUsers } from "@/pages/dashboard";
+import {
+  Home,
+  Profile,
+  Tables,
+  Transactions,
+  Reports,
+  RegisteredUsers,
+  PointsHistory,
+} from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -14,7 +22,6 @@ const icon = {
 };
 
 export const routes = [
-  
   {
     title: "other pages",
     layout: "auth",

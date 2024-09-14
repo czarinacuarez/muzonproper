@@ -46,7 +46,7 @@ const getWebsiteViewsChart = async () => {
     ],
     options: {
       ...chartsConfig,
-      colors: ["#FFF231"],
+      colors: ["#81c784"],
       stroke: {
         lineCap: "round",
       },
@@ -74,7 +74,7 @@ const getRedeemedChart = async () => {
     ],
     options: {
       ...chartsConfig,
-      colors: ["#0288d1"],
+      colors: ["#aed581"],
       stroke: {
         lineCap: "round",
       },
@@ -102,7 +102,7 @@ const getRequestChart = async () => {
     ],
     options: {
       ...chartsConfig,
-      colors: ["#388e3c"],
+      colors: ["#81c784"],
       stroke: {
         lineCap: "round",
       },

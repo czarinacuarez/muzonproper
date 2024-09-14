@@ -15,7 +15,7 @@ export function ProfileInfoCard({ title, description, details, action }) {
         floated={false}
         className="mx-0 mb-4 mt-0 flex items-center justify-between gap-4"
       >
-        <Typography variant="h6" color="blue-gray">
+        <Typography variant="h5" color="green">
           {title}
         </Typography>
         {action}

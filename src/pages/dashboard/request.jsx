@@ -442,7 +442,7 @@ export function Request() {
             className="m-0 flex items-center justify-between p-6"
           >
             <div>
-              <Typography variant="h6" color="blue-gray">
+              <Typography variant="h5" color="green">
                 Requester Profile
               </Typography>
               <Typography
@@ -502,7 +502,7 @@ export function Request() {
                 floated={false}
                 className="mx-0 mb-4 mt-6 flex items-center justify-between gap-4"
               >
-                <Typography variant="h6" color="blue-gray">
+                <Typography variant="h6" color="green">
                   Profile Information
                 </Typography>
               </CardHeader>
@@ -713,7 +713,7 @@ export function Request() {
 
             <div class="pt-3">
               <button
-                class="block w-full select-none rounded-lg bg-blue-gray-900/10 px-6 py-3 text-center align-middle font-sans text-xs font-bold uppercase text-blue-gray-900 shadow-none shadow-gray-900/10 transition-all hover:scale-105 hover:shadow-none hover:shadow-gray-900/20 focus:scale-105 focus:opacity-[0.85] focus:shadow-none active:scale-100 active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                class="block w-full select-none rounded-lg bg-green-900/10 px-6 py-3 text-center align-middle font-sans text-xs font-bold uppercase text-blue-gray-900 shadow-none shadow-gray-900/10 transition-all hover:scale-105 hover:shadow-none hover:shadow-gray-900/20 focus:scale-105 focus:opacity-[0.85] focus:shadow-none active:scale-100 active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                 type="button"
                 onClick={() =>
                   handleAccept(
@@ -741,7 +741,7 @@ export function Request() {
             </div>
             <div class="mb-5 pt-3">
               <button
-                class="block w-full select-none rounded-lg bg-red-800 px-6 py-3 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-none shadow-gray-900/10 transition-all hover:scale-105 hover:shadow-none hover:shadow-gray-900/20 focus:scale-105 focus:opacity-[0.85] focus:shadow-none active:scale-100 active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                class="block w-full select-none rounded-lg bg-teal-800 px-6 py-3 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-none shadow-gray-900/10 transition-all hover:scale-105 hover:shadow-none hover:shadow-gray-900/20 focus:scale-105 focus:opacity-[0.85] focus:shadow-none active:scale-100 active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                 type="button"
                 disabled={
                   requestsInfo?.user_decision?.cancelled_date !== null ||
@@ -764,7 +764,7 @@ export function Request() {
             color="transparent"
             className="m-0 p-6"
           >
-            <Typography variant="h6" color="blue-gray">
+            <Typography variant="h5" color="green">
               Request Progress
             </Typography>
           </CardHeader>
@@ -792,7 +792,7 @@ export function Request() {
                     <Typography
                       as="span"
                       variant="small"
-                      className="text-sm font-medium text-red-300"
+                      className="text-sm font-medium text-teal-300"
                     >
                       {comments}
                     </Typography>

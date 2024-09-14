@@ -6,89 +6,106 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useState , useEffect  } from "react";
-import { Link, Navigate , useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { FirebaseAuth, FirebaseFirestore } from "../../firebase";
 import { useUser } from "../../context/AuthContext";
-import { doc, getDoc } from 'firebase/firestore';
-
+import { doc, getDoc } from "firebase/firestore";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 
 export function SignIn() {
   const navigate = useNavigate();
-
+  const [passwordShown, setPasswordShown] = useState(false);
+  const togglePasswordVisiblity = () => setPasswordShown((cur) => !cur);
   const { userType } = useUser();
 
   useEffect(() => {
-   if (userType === 'admin') {
-     navigate('/dashboard/home');
-   } else if (userType === 'user') {
-     navigate('/userdashboard/home');
-   }
- }, [userType, navigate]);
-     
- 
-   const [formValues, setFormValues] = useState({
-     email: "",
-     password: "",
-   });
- 
-   const handleInputChange = (e) => {
-     setFormValues({ ...formValues, [e.target.name]: e.target.value });
-   };
- 
-   const handleSubmit = async (e) => {
-     e.preventDefault();
- 
-     try {
+    if (userType === "admin") {
+      navigate("/dashboard/home");
+    } else if (userType === "user") {
+      navigate("/userdashboard/home");
+    }
+  }, [userType, navigate]);
+
+  const [formValues, setFormValues] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleInputChange = (e) => {
+    setFormValues({ ...formValues, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
       await signInWithEmailAndPassword(
         FirebaseAuth,
         formValues.email,
-        formValues.password
+        formValues.password,
       );
-     } catch (error) {
-       console.error(error);
-     }
-   };
-
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
-    <section className="h-screen p-8 flex gap-4">
-      <div className="w-full lg:w-3/5 mx-auto my-auto">
+    <section className="flex h-screen gap-4 p-8">
+      <div className="mx-auto my-auto w-full lg:w-3/5">
         <div className="text-center">
-          <Typography variant="h2" className="font-bold mb-4">Sign In</Typography>
-          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to sign in.</Typography>
+          <div className="flex justify-center gap-2">
+            <img className="h-12 w-12" src="/img/meslogo.png"></img>
+            <Typography variant="h2" color="green" className="mb-4 font-bold">
+              MuzonEcoSave
+            </Typography>
+          </div>
+
+          <Typography
+            variant="paragraph"
+            color="blue-gray"
+            className="text-base font-normal"
+          >
+            Enter your email and password to sign in.
+          </Typography>
         </div>
-        <form  onSubmit={handleSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
-          <div className="mb-1 flex flex-col gap-6">
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              Email
-            </Typography>
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto mb-2 mt-8 w-80 max-w-screen-lg lg:w-1/2"
+        >
+          <div className="mb-4 flex flex-col gap-6">
             <Input
+              label="Email"
+              onChange={handleInputChange}
               name="email"
-              onChange={handleInputChange}
               type="email"
+              color="green"
               size="lg"
-              placeholder="name@mail.com"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              Password
-            </Typography>
-            <Input
-              name="password"
-              onChange={handleInputChange}
-              type="password"
-              size="lg"
-              placeholder="********"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
+              required
             />
           </div>
+
+          <div className="mb-4 flex flex-col gap-6">
+            <Input
+              label="Password"
+              onChange={handleInputChange}
+              name="password"
+              color="green"
+              size="lg"
+              required
+              type={passwordShown ? "text" : "password"}
+              icon={
+                <i onClick={togglePasswordVisiblity}>
+                  {passwordShown ? (
+                    <EyeIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  )}
+                </i>
+              }
+            />
+          </div>
+
           {/* <Checkbox
             label={
               <Typography
@@ -107,7 +124,7 @@ export function SignIn() {
             }
             containerProps={{ className: "-ml-2.5" }}
           /> */}
-          <Button  type="submit"  className="mt-6" fullWidth>
+          <Button type="submit" color="green" className="mt-6" fullWidth>
             Sign In
           </Button>
 
@@ -152,20 +169,23 @@ export function SignIn() {
               <span>Sign in With Twitter</span>
             </Button>
           </div> */}
-          <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
+          <Typography
+            variant="paragraph"
+            className="mt-4 text-center font-medium text-blue-gray-500"
+          >
             Not registered?
-            <Link to="/auth/sign-up" className="text-gray-900 ml-1">Create account</Link>
+            <Link to="/auth/sign-up" className="ml-1 text-gray-900">
+              Create account
+            </Link>
           </Typography>
         </form>
-
       </div>
-      <div className="w-2/5 h-full hidden lg:block">
+      <div className="hidden h-full w-2/5 lg:block">
         <img
-          src="/img/pattern.png"
-          className="h-full w-full object-cover rounded-3xl"
+          src="/img/greenpattern2.png"
+          className="h-full w-full rounded-3xl object-cover"
         />
       </div>
-
     </section>
   );
 }

@@ -4,6 +4,7 @@ import {
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import * as XLSX from "xlsx"; // Import xlsx for Excel export
 import {
   Card,
   CardHeader,
@@ -63,6 +64,30 @@ export function Transactions() {
   const [error, setError] = useState(null);
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const exportToExcel = () => {
+    // Prepare data for export
+    const dataToExport = filteredRequests.map((request, index) => ({
+      "Request No.": index + 1, // Incremental numbering
+      "User Name": request.userName || "Unknown User",
+      "User Email": request.email || "Unknown Email",
+      "Document Name": request.document_name || "N/A",
+      Pages: request.pages || "N/A",
+      Deadline: formatTimestamp(request.deadline),
+      Date: formatTimestamp(request.submissionDate),
+      Status: request.status || "N/A",
+    }));
+
+    console.log(dataToExport); // Check the data before exporting
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Requests Report");
+
+    // Write and download the Excel file
+    XLSX.writeFile(workbook, "RequestsReport.xlsx");
+  };
   useEffect(() => {
     const requestsCollection = query(
       collection(FirebaseFirestore, "requests"),
@@ -217,7 +242,7 @@ export function Transactions() {
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
-              <Typography variant="h5" color="blue-gray">
+              <Typography variant="h5" color="green">
                 Print Rewards Request
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
@@ -234,7 +259,13 @@ export function Transactions() {
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                 />
               </div>
-              <Button className="flex w-2/5 items-center gap-3" size="sm">
+
+              <Button
+                onClick={exportToExcel}
+                className="flex items-center gap-3 text-center"
+                size="sm"
+                color="green"
+              >
                 <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" />{" "}
                 Download
               </Button>
@@ -349,13 +380,13 @@ export function Transactions() {
           </table>
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Button variant="outlined" size="sm">
+          {/* <Button variant="outlined" size="sm">
             Previous
           </Button>
 
           <Button variant="outlined" size="sm">
             Next
-          </Button>
+          </Button> */}
         </CardFooter>
       </Card>
     </div>
