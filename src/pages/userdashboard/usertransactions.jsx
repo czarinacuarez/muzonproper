@@ -288,7 +288,7 @@ export function UserTransactions() {
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
-              <Typography variant="h6" color="blue-gray">
+              <Typography variant="h5" color="green">
                 Points History
               </Typography>
               <Typography
@@ -314,7 +314,7 @@ export function UserTransactions() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
+        <CardBody className="overflow-auto px-0">
           <table className="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
@@ -407,13 +407,13 @@ export function UserTransactions() {
           </table>
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Button variant="outlined" size="sm">
+          {/* <Button variant="outlined" size="sm">
             Previous
           </Button>
 
           <Button variant="outlined" size="sm">
             Next
-          </Button>
+          </Button> */}
         </CardFooter>
       </Card>
 

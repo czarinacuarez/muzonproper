@@ -38,6 +38,7 @@ import {
   updateDoc,
   setDoc,
   getDoc,
+  orderBy,
 } from "firebase/firestore";
 import { FirebaseStorage, FirebaseFirestore } from "../../firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -83,7 +84,11 @@ export function Redeem() {
     const fetchRequests = async () => {
       try {
         const requestsCollection = collection(FirebaseFirestore, "requests");
-        const q = query(requestsCollection, where("user_id", "==", user.uid));
+        const q = query(
+          requestsCollection,
+          where("user_id", "==", user.uid),
+          orderBy("submissionDate", "desc"),
+        );
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           const fetchedRequests = querySnapshot.docs.map((doc) => ({
             id: doc.id,
@@ -250,7 +255,7 @@ export function Redeem() {
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
-              <Typography variant="h6" color="blue-gray">
+              <Typography variant="h5" color="green">
                 Print Rewards
               </Typography>
               <Typography
@@ -274,10 +279,12 @@ export function Redeem() {
               </div>
               <Button
                 onClick={handleOpen}
-                className="flex w-2/5 items-center gap-3 text-center "
+                color="green"
+                className="flex  items-center gap-3 text-center "
                 size="sm"
               >
                 <GiftTopIcon strokeWidth={2} className="h-4 w-4" /> Redeem
+                Reward
               </Button>
               <Dialog open={open} size="xs" handler={handleOpen}>
                 <div className="flex items-center justify-between">
@@ -355,7 +362,7 @@ export function Redeem() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-x-scroll px-0">
+        <CardBody className="overflow-auto px-0">
           <table className="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
@@ -447,7 +454,7 @@ export function Redeem() {
           </table>
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
+          {/* <Typography variant="small" color="blue-gray" className="font-normal">
             Page 1 of 10
           </Typography>
           <div className="flex gap-2">
@@ -457,7 +464,7 @@ export function Redeem() {
             <Button variant="outlined" size="sm">
               Next
             </Button>
-          </div>
+          </div> */}
         </CardFooter>
       </Card>
     </div>

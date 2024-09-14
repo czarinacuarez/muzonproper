@@ -8,17 +8,13 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
-import {
- 
-  Bars3Icon,
-} from "@heroicons/react/24/solid";
-import {
-} from "@/context";
+import { Bars3Icon } from "@heroicons/react/24/solid";
+import {} from "@/context";
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
-    dark: "bg-gradient-to-br from-gray-800 to-gray-900",
+    dark: "bg-gradient-to-br from-green-800 to-green-900",
     white: "bg-white shadow-sm",
     transparent: "bg-transparent",
   };
@@ -27,22 +23,19 @@ export function Sidenav({ brandImg, brandName, routes }) {
     <aside
       className={`${sidenavTypes[sidenavType]} ${
         openSidenav ? "translate-x-0" : "-translate-x-80"
-      } fixed inset-0 z-30 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-blue-gray-100`}
+      } fixed inset-0 z-30 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl border border-blue-gray-100 transition-transform duration-300 xl:translate-x-0`}
     >
-      <div
-        className={`relative`}
-      >
-<IconButton
-            variant="text"
-            color="blue-gray"
-            className="grid xl:hidden"
-            onClick={() => setOpenSidenav(dispatch, !openSidenav)}
-          >
-            <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
-          </IconButton>
-        
+      <div className={`relative`}>
+        <IconButton
+          variant="text"
+          color="blue-gray"
+          className="grid xl:hidden"
+          onClick={() => setOpenSidenav(dispatch, !openSidenav)}
+        >
+          <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
+        </IconButton>
 
-        <Link to="/" className="py-6 px-8 text-center">
+        <Link to="/" className="px-8 py-6 text-center">
           {/* <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
@@ -62,41 +55,43 @@ export function Sidenav({ brandImg, brandName, routes }) {
         </IconButton>
       </div>
       <div className="m-4">
-      {routes.map(({ layout, pages }, key) => (
-        <ul key={key} className="mb-4 flex flex-col gap-1">
-          {pages.map(({ icon, name, path }) => (
-            icon && name && (
-              <li key={name}>
-                <NavLink to={`/${layout}${path}`}>
-                  {({ isActive }) => (
-                    <Button
-                      variant={isActive ? "gradient" : "text"}
-                      color={
-                        isActive
-                          ? sidenavColor
-                          : sidenavType === "dark"
-                          ? "white"
-                          : "blue-gray"
-                      }
-                      className="flex items-center gap-4 px-4 capitalize"
-                      fullWidth
-                    >
-                      {icon}
-                      <Typography
-                        color="inherit"
-                        className="font-medium capitalize"
-                      >
-                        {name}
-                      </Typography>
-                    </Button>
-                  )}
-                </NavLink>
-              </li>
-            )
-          ))}
-        </ul>
-      ))}
-    </div>
+        {routes.map(({ layout, pages }, key) => (
+          <ul key={key} className="mb-4 flex flex-col gap-1">
+            {pages.map(
+              ({ icon, name, path }) =>
+                icon &&
+                name && (
+                  <li key={name}>
+                    <NavLink to={`/${layout}${path}`}>
+                      {({ isActive }) => (
+                        <Button
+                          variant={isActive ? "gradient" : "text"}
+                          color={
+                            isActive
+                              ? sidenavColor
+                              : sidenavType === "dark"
+                              ? "white"
+                              : "blue-gray"
+                          }
+                          className="flex items-center gap-4 px-4 capitalize"
+                          fullWidth
+                        >
+                          {icon}
+                          <Typography
+                            color="inherit"
+                            className="font-medium capitalize"
+                          >
+                            {name}
+                          </Typography>
+                        </Button>
+                      )}
+                    </NavLink>
+                  </li>
+                ),
+            )}
+          </ul>
+        ))}
+      </div>
     </aside>
   );
 }

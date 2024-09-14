@@ -232,7 +232,7 @@ export function Request() {
         await setDoc(notificationRef, {
           [`notification-${newMapId}`]: {
             accepted: false,
-            rejected: false,
+            rejected: true,
             printed: false,
             received: false,
             transactionId: id,
@@ -246,7 +246,7 @@ export function Request() {
         await updateDoc(notificationRef, {
           [`notification-${newMapId}`]: {
             accepted: false,
-            rejected: false,
+            rejected: true,
             printed: false,
             received: false,
             transactionId: id,

@@ -264,6 +264,25 @@ export function SkProfiling() {
         </DialogFooter>
       </Dialog>
 
+      <Card className="my-2 border border-blue-gray-100 shadow-sm">
+        <CardHeader
+          color="transparent"
+          floated={false}
+          shadow={false}
+          className="m-0 p-0 px-5 pt-4 "
+        >
+          <Typography variant="h5" color="green">
+            SK Profiling
+          </Typography>
+        </CardHeader>
+        <CardBody>
+          <Typography color="blue-gray" className="text-base font-normal">
+            Kindly fill up the following requirements below. Once you've fill
+            out, your account will be verified for reedeming rewards.
+          </Typography>
+        </CardBody>
+      </Card>
+
       <form onSubmit={handleSubmit}>
         {cardData.map((card, index) => (
           <Card
@@ -276,7 +295,7 @@ export function SkProfiling() {
               shadow={false}
               className="m-0 p-0 px-4 pt-4 "
             >
-              <Typography variant="h6" color="blue-gray text-sm font-normal">
+              <Typography variant="h6" color="blue-gray">
                 {card.title}
               </Typography>
             </CardHeader>
@@ -286,6 +305,7 @@ export function SkProfiling() {
                   <Input
                     size="lg"
                     name={card.name}
+                    color="green"
                     onChange={handleInputChange}
                     type="text"
                     className=" !border-t-blue-gray-200  focus:!border-t-gray-900"
@@ -296,6 +316,7 @@ export function SkProfiling() {
                 ) : card.type === "select" ? (
                   <Select
                     name={card.name}
+                    color="green"
                     value={formValues[card.name] || ""}
                     onChange={(val) => handleSelectChange(val, card.name)}
                     labelProps={{
@@ -311,6 +332,7 @@ export function SkProfiling() {
                 ) : (
                   <Textarea
                     size="lg"
+                    color="green"
                     name={card.name}
                     onChange={handleInputChange}
                     type="text"
@@ -326,7 +348,9 @@ export function SkProfiling() {
         ))}
 
         <div className=" md:row-reverse  flex">
-          <Button type="submit">Submit</Button>
+          <Button color="green" type="submit">
+            Submit
+          </Button>
         </div>
       </form>
     </div>

@@ -254,7 +254,7 @@ export function UserHome() {
         <StatisticsCard
           value={totalPoints}
           title="Total Bottles Submitted"
-          color="gray"
+          color="green"
           icon={React.createElement(GiftIcon, {
             className: "w-6 h-6 text-white",
           })}
@@ -271,13 +271,13 @@ export function UserHome() {
         <StatisticsCard
           value={currentPoints}
           title="Current Points"
-          color="gray"
+          color="green"
           icon={React.createElement(RocketLaunchIcon, {
             className: "w-6 h-6 text-white",
           })}
           footer={
             <div className="flex items-center justify-center">
-              <Button onClick={() => moveRedeem()}>
+              <Button color="green" onClick={() => moveRedeem()}>
                 Redeem Printing Rewards
               </Button>
             </div>
@@ -286,7 +286,7 @@ export function UserHome() {
         <StatisticsCard
           value={totalPoints}
           title="Total Points Redeemed"
-          color="gray"
+          color="green"
           icon={React.createElement(CircleStackIcon, {
             className: "w-6 h-6 text-white",
           })}
@@ -328,7 +328,7 @@ export function UserHome() {
             className="m-0 flex items-center justify-between p-6"
           >
             <div>
-              <Typography variant="h6" color="blue-gray" className="mb-1">
+              <Typography variant="h5" color="green" className="mb-1">
                 Recent transaction
               </Typography>
               <Typography
@@ -340,6 +340,7 @@ export function UserHome() {
                   className="h-4 w-4 text-blue-gray-200"
                 />
                 <strong>30 done</strong> this month */}
+                List of user's recent rewards request transaction.
               </Typography>
             </div>
             {/* <Menu placement="left-start">
@@ -359,7 +360,7 @@ export function UserHome() {
               </MenuList>
             </Menu> */}
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+          <CardBody className="overflow-auto px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
@@ -475,13 +476,13 @@ export function UserHome() {
                   {type === "added" ? (
                     <PlusCircleIcon className="!h-5 !w-5 text-green-500" />
                   ) : (
-                    <MinusCircleIcon className="!h-5 !w-5 text-red-500" />
+                    <MinusCircleIcon className="!h-5 !w-5 text-blue-gray-500" />
                   )}
                 </div>
                 <div>
                   <Typography
                     variant="small"
-                    color={type === "added" ? "green" : "red"}
+                    color={type === "added" ? "green" : "blue-gray"}
                     className="block font-medium"
                   >
                     {type === "added"

@@ -207,6 +207,7 @@ export function UserAccount() {
                 onChange={handleInputChange}
                 name="lastname"
                 size="lg"
+                color="green"
                 required
                 type="text"
                 value={formValues.lastname}
@@ -217,6 +218,7 @@ export function UserAccount() {
                 name="firstname"
                 size="lg"
                 required
+                color="green"
                 type="text"
                 value={formValues.firstname}
               />
@@ -225,6 +227,7 @@ export function UserAccount() {
                 onChange={handleInputChange}
                 size="lg"
                 required
+                color="green"
                 value={formValues.phone}
                 name="phone"
                 type="tel"
@@ -238,6 +241,7 @@ export function UserAccount() {
                 size="lg"
                 required
                 name="gender"
+                color="green"
                 label="Gender"
               >
                 <Option value="female">Female</Option>
@@ -249,6 +253,7 @@ export function UserAccount() {
                 onChange={(value) => handleSelectChange(value, "civilStatus")}
                 size="lg"
                 required
+                color="green"
                 name="civilStatus"
                 label="Civil Status"
               >
@@ -265,6 +270,7 @@ export function UserAccount() {
                 onChange={(value) => handleSelectChange(value, "youth")}
                 size="lg"
                 required
+                color="green"
                 value={formValues.youth}
                 label="Youth Classification"
               >
@@ -278,6 +284,7 @@ export function UserAccount() {
 
               <Select
                 name="ageGroup"
+                color="green"
                 value={formValues.ageGroup}
                 onChange={(value) => handleSelectChange(value, "ageGroup")}
                 size="lg"
@@ -291,6 +298,7 @@ export function UserAccount() {
 
               <Select
                 name="area"
+                color="green"
                 value={formValues.area}
                 onChange={(value) => handleSelectChange(value, "area")}
                 size="lg"
@@ -327,7 +335,9 @@ export function UserAccount() {
             </div>
 
             <div>
-              <Button type="submit">Change Profile Details</Button>
+              <Button color="green" type="submit">
+                Change Profile Details
+              </Button>
             </div>
           </CardBody>
         </form>
@@ -355,6 +365,7 @@ export function UserAccount() {
               name="password"
               size="lg"
               required
+              color="green"
               type={passwordShown ? "text" : "password"}
               icon={
                 <i onClick={togglePasswordVisibility}>
@@ -372,6 +383,7 @@ export function UserAccount() {
               name="newPassword"
               size="lg"
               required
+              color="green"
               type={passwordShown ? "text" : "password"}
               icon={
                 <i onClick={togglePasswordVisibility}>
@@ -388,6 +400,7 @@ export function UserAccount() {
               onChange={handleInputChange}
               name="confirmPassword"
               size="lg"
+              color="green"
               required
               type={passwordShown ? "text" : "password"}
               icon={
@@ -401,7 +414,9 @@ export function UserAccount() {
               }
             />
             <div>
-              <Button type="submit">Change Password</Button>
+              <Button color="green" type="submit">
+                Change Password
+              </Button>
             </div>
           </CardBody>
         </form>
@@ -430,6 +445,7 @@ export function UserAccount() {
               onChange={handleInputChange}
               name="email"
               size="lg"
+              color="green"
               required
               type="email"
             />
@@ -438,11 +454,13 @@ export function UserAccount() {
               onChange={handleInputChange}
               name="password"
               size="lg"
+              color="green"
               required
               type="password"
             />
             <Input
               label="New Email"
+              color="green"
               onChange={handleInputChange}
               name="newEmail"
               size="lg"
@@ -450,7 +468,9 @@ export function UserAccount() {
               type="email"
             />
             <div>
-              <Button type="submit">Change Email</Button>
+              <Button color="green" type="submit">
+                Change Email
+              </Button>
             </div>
           </CardBody>
         </form>
