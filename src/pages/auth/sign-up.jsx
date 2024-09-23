@@ -6,6 +6,7 @@ import {
   Select,
   Option,
   Typography,
+  Alert,
 } from "@material-tailwind/react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { FirebaseAuth, FirebaseFirestore } from "../../firebase";
@@ -20,6 +21,8 @@ export function SignUp() {
   const navigate = useNavigate();
   const [passwordShown, setPasswordShown] = useState(false);
   const togglePasswordVisiblity = () => setPasswordShown((cur) => !cur);
+  const [alert, setAlert] = useState({ message: "", color: "" });
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (userType === "admin") {
@@ -57,6 +60,23 @@ export function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (
+      !formValues.gender ||
+      !formValues.civilStatus ||
+      !formValues.youth ||
+      !formValues.ageGroup ||
+      !formValues.area
+    ) {
+      console.log("Validation failed, setting alert.");
+      setAlert({
+        message: "Please fill in all the required fields.",
+        color: "red",
+      });
+      setOpen(true);
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         FirebaseAuth,
@@ -89,8 +109,32 @@ export function SignUp() {
       });
 
       <Navigate to="/userdashboard/home" />;
-    } catch (e) {
-      alert(e.message);
+    } catch (error) {
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setAlert({
+            message: "The email address is already in use by another account.",
+            color: "red",
+          });
+          break;
+        case "auth/weak-password":
+          setAlert({
+            message: "Password should be at least 6 characters.",
+            color: "red",
+          });
+          break;
+        case "auth/invalid-email":
+          setAlert({
+            message: "The email address is not valid.",
+            color: "red",
+          });
+          break;
+        default:
+          setAlert({
+            message: `Error: ${error.message}`,
+            color: "red",
+          });
+      }
     }
   };
 
@@ -307,9 +351,18 @@ export function SignUp() {
             }
             containerProps={{ className: "-ml-2.5" }}
           /> */}
-          <Button type="submit" color="green" className="mt-6" fullWidth>
+          <Button type="submit" color="green" className="my-6" fullWidth>
             Register Now
           </Button>
+
+          <Alert
+            open={open}
+            onClose={() => setOpen(false)}
+            color={alert.color}
+            className="mb-4"
+          >
+            {alert.message || "A dismissible alert for showing message."}
+          </Alert>
           {/* <div className="space-y-4 mt-8">
             <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth>
               <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">

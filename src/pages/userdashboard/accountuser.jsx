@@ -8,6 +8,7 @@ import {
   Button,
   Select,
   Option,
+  Alert,
 } from "@material-tailwind/react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import {
@@ -34,6 +35,9 @@ export function UserAccount() {
     newEmail: "",
   });
 
+  const [alert, setAlert] = useState({ message: "", color: "" });
+  const [open, setOpen] = useState(false); // Controls the alert visibility
+
   const handleInputChange = (e) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value });
   };
@@ -44,7 +48,10 @@ export function UserAccount() {
     if (formValues.newPassword === formValues.confirmPassword) {
       reauthenticateAndChangePassword();
     } else {
-      alert("Passwords do not match!");
+      setAlert({
+        message: "Passwords do not match!",
+        color: "red",
+      });
     }
   };
 
@@ -62,12 +69,19 @@ export function UserAccount() {
       ageGroup: formValues.ageGroup,
     })
       .then(() => {
-        alert("Profile updated successfully!");
-        // Optionally reset form values if desired
+        setAlert({
+          message: "Profile updated successfully!",
+          color: "green",
+        });
+        setOpen(true); // Ensure this is called to show the alert
       })
       .catch((error) => {
         console.error("Error updating profile:", error);
-        alert("Failed to update profile. Please try again.");
+        setAlert({
+          message: "Failed to update profile. Please try again.",
+          color: "red",
+        });
+        setOpen(true);
       });
   };
 
@@ -75,9 +89,13 @@ export function UserAccount() {
     e.preventDefault();
     // Check if the current email matches the authenticated user's email
     if (formValues.email !== user.email) {
-      alert(
-        "The current email you entered does not match your existing email.",
-      );
+      setAlert({
+        message:
+          "The current email you entered does not match your existing email.",
+        color: "red",
+      });
+      setOpen(true);
+
       return;
     }
     changeEmail(); // Proceed with reauthentication and email update if the emails match
@@ -96,7 +114,12 @@ export function UserAccount() {
         return updatePassword(auth.currentUser, formValues.newPassword); // Update password
       })
       .then(() => {
-        alert("Password updated successfully!");
+        setAlert({
+          message: "Password updated successfully!",
+          color: "green",
+        });
+        setOpen(true);
+
         setFormValues({
           email: "",
           password: "",
@@ -107,7 +130,11 @@ export function UserAccount() {
       })
       .catch((error) => {
         console.error("Error updating password:", error);
-        alert("Error updating password");
+        setAlert({
+          message: "Error updating password",
+          color: "red",
+        });
+        setOpen(true);
       });
   };
 
@@ -138,7 +165,11 @@ export function UserAccount() {
         });
       })
       .then(() => {
-        alert("Email updated successfully! Please verify your new email.");
+        setAlert({
+          message: "Email updated successfully! Please verify your new email.",
+          color: "green",
+        });
+        setOpen(true);
         setFormValues({
           email: "",
           password: "",
@@ -150,8 +181,11 @@ export function UserAccount() {
         });
       })
       .catch((error) => {
-        console.error("Error updating email:", error);
-        alert("Failed to update email. Please try again.");
+        setAlert({
+          message: "Failed to update email. Please try again",
+          color: "green",
+        });
+        setOpen(true);
       });
   };
 
@@ -182,7 +216,15 @@ export function UserAccount() {
 
   return (
     <div className="mx-auto my-20 flex max-w-screen-lg flex-col gap-8">
-      {/* Manage Password Section */}
+      <Alert
+        open={open}
+        onClose={() => setOpen(false)}
+        color={alert.color}
+        className="mb-4"
+      >
+        {alert.message || "A dismissible alert for showing message."}
+      </Alert>
+
       <Card className="border border-blue-gray-100 shadow-sm">
         <CardHeader
           color="transparent"

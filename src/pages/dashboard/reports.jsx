@@ -307,7 +307,7 @@ export function Reports() {
             className="m-0 flex items-center justify-between p-6"
           >
             <div>
-              <Typography variant="h6" color="blue-gray" className="mb-1">
+              <Typography variant="h5" color="green" className="mb-1">
                 Top Users by Total Bottles Donated
               </Typography>
               <Typography
@@ -318,11 +318,11 @@ export function Reports() {
                   strokeWidth={3}
                   className="h-4 w-4 text-blue-gray-200"
                 />
-                1-10
+                Top 10 Users who frequently donated bottles
               </Typography>
             </div>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+          <CardBody className="overflow-x-auto px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>

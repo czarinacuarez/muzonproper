@@ -4,6 +4,7 @@ import {
   Checkbox,
   Button,
   Typography,
+  Alert,
 } from "@material-tailwind/react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState, useEffect } from "react";
@@ -18,6 +19,8 @@ export function SignIn() {
   const [passwordShown, setPasswordShown] = useState(false);
   const togglePasswordVisiblity = () => setPasswordShown((cur) => !cur);
   const { userType } = useUser();
+  const [alert, setAlert] = useState({ message: "", color: "" });
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (userType === "admin") {
@@ -46,7 +49,17 @@ export function SignIn() {
         formValues.password,
       );
     } catch (error) {
-      console.error(error);
+      switch (error.code) {
+        case "auth/wrong-password":
+          setAlert({ message: "Incorrect password.", color: "red" });
+          break;
+        case "auth/user-not-found":
+          setAlert({ message: "No user found with this email.", color: "red" });
+          break;
+        default:
+          setAlert({ message: `Error: ${error.message}`, color: "red" });
+      }
+      setOpen(true);
     }
   };
 
@@ -124,9 +137,18 @@ export function SignIn() {
             }
             containerProps={{ className: "-ml-2.5" }}
           /> */}
-          <Button type="submit" color="green" className="mt-6" fullWidth>
+          <Button type="submit" color="green" className="my-6" fullWidth>
             Sign In
           </Button>
+
+          <Alert
+            open={open}
+            onClose={() => setOpen(false)}
+            color={alert.color}
+            className="mb-4"
+          >
+            {alert.message || "A dismissible alert for showing message."}
+          </Alert>
 
           {/* <div className="flex items-center justify-between gap-2 mt-6">
             <Checkbox

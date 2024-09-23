@@ -239,7 +239,9 @@ export function UserTransactions() {
         ...doc.data(),
         type: "added",
         id: doc.id,
-        points: doc.data().points, // Ensure correct mapping
+        points: doc.data().points,
+        smallBottles: doc.data().smallBottles,
+        bigBottles: doc.data().bigBottles,
       }));
 
       setMergedHistory((prev) => {
@@ -283,7 +285,7 @@ export function UserTransactions() {
   }
 
   return (
-    <div className="mx-auto my-14 flex max-w-screen-lg flex-col gap-8">
+    <div className=" mx-auto my-14 flex max-w-screen-lg flex-col gap-8">
       <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
@@ -314,7 +316,7 @@ export function UserTransactions() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-auto px-0">
+        <CardBody className="max-h-96 overflow-auto px-0">
           <table className="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
@@ -334,74 +336,97 @@ export function UserTransactions() {
               </tr>
             </thead>
             <tbody>
-              {mergedHistory.map(
-                ({ type, points, timestamp, id, transactionId }, index) => {
-                  const isLast = index === mergedHistory.length - 1;
-                  const classes = isLast
-                    ? "p-4"
-                    : "p-4 border-b border-blue-gray-50";
+              {mergedHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-3 text-center">
+                    <Typography className="text-sm font-semibold text-blue-gray-600">
+                      No Data Available
+                    </Typography>
+                  </td>
+                </tr>
+              ) : (
+                mergedHistory.map(
+                  (
+                    {
+                      type,
+                      points,
+                      timestamp,
+                      id,
+                      transactionId,
+                      smallBottles,
+                      bigBottles,
+                    },
+                    index,
+                  ) => {
+                    const isLast = index === mergedHistory.length - 1;
+                    const classes = isLast
+                      ? "p-4"
+                      : "p-4 border-b border-blue-gray-50";
 
-                  return (
-                    <tr key={id}>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
+                    return (
+                      <tr key={id}>
+                        <td className={classes}>
+                          <div className="flex items-center gap-3">
+                            <Typography className="text-sm font-semibold text-blue-gray-600">
+                              {type === "added"
+                                ? "Bottle Insertion"
+                                : "Redeemed Rewards"}
+                            </Typography>
+                          </div>
+                        </td>
+                        <td className={classes}>
                           <Typography className="text-sm font-semibold text-blue-gray-600">
-                            {type === "added"
-                              ? "Bottle Insertion"
-                              : "Redeemed Rewards"}
+                            {points}
                           </Typography>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <Typography className="text-sm font-semibold text-blue-gray-600">
-                          {points}
-                        </Typography>
-                      </td>
-                      <td className={classes}>
-                        <Typography className="text-sm font-normal text-blue-gray-600">
-                          {formatTimestamp(timestamp)}
-                        </Typography>
-                      </td>
-                      <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            size="sm"
-                            variant="ghost"
-                            value={type}
-                            color={type === "added" ? "green" : "red"}
-                          />
-                        </div>
-                      </td>
+                        </td>
+                        <td className={classes}>
+                          <Typography className="text-sm font-normal text-blue-gray-600">
+                            {formatTimestamp(timestamp)}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <div className="w-max">
+                            <Chip
+                              size="sm"
+                              variant="ghost"
+                              value={type}
+                              color={type === "added" ? "green" : "red"}
+                            />
+                          </div>
+                        </td>
 
-                      <td className={classes}>
-                        <Tooltip content="View Transaction">
-                          {type === "added" ? (
-                            <IconButton
-                              onClick={() =>
-                                handleOpen("xs", {
-                                  type,
-                                  points,
-                                  timestamp,
-                                  id,
-                                })
-                              }
-                              variant="text"
-                            >
-                              <EyeIcon className="h-4 w-4" />
-                            </IconButton>
-                          ) : (
-                            <IconButton
-                              onClick={() => moveRequest(transactionId)}
-                              variant="text"
-                            >
-                              <EyeIcon className="h-4 w-4" />
-                            </IconButton>
-                          )}
-                        </Tooltip>
-                      </td>
-                    </tr>
-                  );
-                },
+                        <td className={classes}>
+                          <Tooltip content="View Transaction">
+                            {type === "added" ? (
+                              <IconButton
+                                onClick={() =>
+                                  handleOpen("xs", {
+                                    type,
+                                    points,
+                                    timestamp,
+                                    id,
+                                    smallBottles,
+                                    bigBottles,
+                                  })
+                                }
+                                variant="text"
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </IconButton>
+                            ) : (
+                              <IconButton
+                                onClick={() => moveRequest(transactionId)}
+                                variant="text"
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </IconButton>
+                            )}
+                          </Tooltip>
+                        </td>
+                      </tr>
+                    );
+                  },
+                )
               )}
             </tbody>
           </table>
@@ -430,11 +455,13 @@ export function UserTransactions() {
         handler={handleOpen}
       >
         <DialogHeader>
-          <Typography variant="h5">Bottle Insertion</Typography>
+          <Typography variant="h5" color="green">
+            Bottle Insertion
+          </Typography>
         </DialogHeader>
         <DialogBody>
           <Card className="pt-4">
-            <CardHeader variant="gradient" color="gray" className="mb-8 p-6">
+            <CardHeader variant="gradient" color="green" className="mb-8 p-6">
               <Typography variant="h6" color="white">
                 Transaction Details
               </Typography>
@@ -455,6 +482,18 @@ export function UserTransactions() {
                             <p>
                               <strong className="text-gray-700">Date:</strong>{" "}
                               {formatTimestamp(selectedTransaction.timestamp)}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Small Bottles:
+                              </strong>{" "}
+                              {selectedTransaction.smallBottles}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Big Bottles:
+                              </strong>{" "}
+                              {selectedTransaction.bigBottles}
                             </p>
                             <p>
                               <strong className="text-gray-700">

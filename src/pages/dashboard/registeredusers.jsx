@@ -164,7 +164,7 @@ export function RegisteredUsers() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-x-auto px-0">
+        <CardBody className="max-h-96 overflow-auto px-0">
           <table className="mt-4 w-full min-w-max table-auto text-left">
             <thead>
               <tr>

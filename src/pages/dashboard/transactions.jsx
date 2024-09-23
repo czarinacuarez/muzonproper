@@ -272,7 +272,7 @@ export function Transactions() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className=" overflow-x-auto px-0">
+        <CardBody className=" max-h-96 overflow-auto px-0">
           <table className="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
@@ -323,8 +323,8 @@ export function Transactions() {
                           >
                             {truncate(request.userName)}
                           </Typography>
-                          <Typography className="text-xs font-normal text-blue-gray-500">
-                            {request.email}
+                          <Typography className="overflow-hidden truncate whitespace-nowrap text-xs font-normal text-blue-gray-500">
+                            {truncate(request.email, 16)}
                           </Typography>
                         </div>
                       </div>
@@ -332,7 +332,7 @@ export function Transactions() {
 
                     <td className={classes}>
                       <Typography className="text-sm font-semibold text-blue-gray-600">
-                        {truncate(request.document_name, 25)}
+                        {truncate(request.document_name, 20)}
                       </Typography>
                     </td>
                     <td className={classes}>

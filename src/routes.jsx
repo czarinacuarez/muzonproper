@@ -38,12 +38,12 @@ export const routes = [
         path: "/home",
         element: <Home />,
       },
-      // {
-      //   icon: <BanknotesIcon {...icon} />,
-      //   name: "Points History",
-      //   path: "/points",
-      //   element: <PointsHistory />,
-      // },
+      {
+        icon: <BanknotesIcon {...icon} />,
+        name: "Points History",
+        path: "/points",
+        element: <PointsHistory />,
+      },
       {
         icon: <PrinterIcon {...icon} />,
         name: "Print Rewards",

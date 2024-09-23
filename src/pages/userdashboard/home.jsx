@@ -382,62 +382,73 @@ export function UserHome() {
                 </tr>
               </thead>
               <tbody>
-                {recentRequests.map(
-                  ({ document_name, deadline, status, id }, key) => {
-                    const className = `py-3 px-5 ${
-                      key === recentRequests.length - 1
-                        ? ""
-                        : "border-b border-blue-gray-50"
-                    }`;
+                {recentRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-3 text-center">
+                      <Typography className="text-sm font-semibold text-blue-gray-600">
+                        No Data Available
+                      </Typography>
+                    </td>
+                  </tr>
+                ) : (
+                  recentRequests.map(
+                    ({ document_name, deadline, status, id }, key) => {
+                      const className = `py-3 px-5 ${
+                        key === recentRequests.length - 1
+                          ? ""
+                          : "border-b border-blue-gray-50"
+                      }`;
 
-                    return (
-                      <tr key={document_name}>
-                        <td className={className}>
-                          <Typography className="text-sm font-semibold text-blue-gray-600">
-                            {truncate(document_name, 25)}
-                          </Typography>
-                        </td>
-                        <td className={className}>
-                          <Typography
-                            variant="small"
-                            className="text-xs font-medium text-blue-gray-600"
-                          >
-                            {formatTimestamp(deadline.toDate())}{" "}
-                            {/* Convert Firestore Timestamp to Date */}
-                          </Typography>
-                        </td>
-                        <td className={className}>
-                          <div className="w-max">
-                            <Chip
-                              size="sm"
-                              variant="ghost"
-                              value={status}
-                              color={
-                                status === "received"
-                                  ? "green"
-                                  : status === "cancelled"
-                                  ? "red"
-                                  : status === "rejected"
-                                  ? "red"
-                                  : "amber"
-                              }
-                            />
-                          </div>
-                        </td>
-                        <td className={className}>
-                          <Tooltip content="View Request">
-                            <IconButton
-                              variant="text"
-                              onClick={() => moveRequest(id)}
+                      return (
+                        <tr key={document_name}>
+                          <td className={className}>
+                            <Typography className="text-sm font-semibold text-blue-gray-600">
+                              {truncate(document_name, 25)}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography
+                              variant="small"
+                              className="text-xs font-medium text-blue-gray-600"
                             >
-                              <EyeIcon className="h-4 w-4" />
-                            </IconButton>
-                          </Tooltip>
-                        </td>
-                      </tr>
-                    );
-                  },
+                              {formatTimestamp(deadline.toDate())}{" "}
+                              {/* Convert Firestore Timestamp to Date */}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <div className="w-max">
+                              <Chip
+                                size="sm"
+                                variant="ghost"
+                                value={status}
+                                color={
+                                  status === "received"
+                                    ? "green"
+                                    : status === "cancelled"
+                                    ? "red"
+                                    : status === "rejected"
+                                    ? "red"
+                                    : "amber"
+                                }
+                              />
+                            </div>
+                          </td>
+                          <td className={className}>
+                            <Tooltip content="View Request">
+                              <IconButton
+                                variant="text"
+                                onClick={() => moveRequest(id)}
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </IconButton>
+                            </Tooltip>
+                          </td>
+                        </tr>
+                      );
+                    },
+                  )
                 )}
+                ;
               </tbody>
             </table>
           </CardBody>
@@ -464,41 +475,47 @@ export function UserHome() {
             </Typography>
           </CardHeader>
           <CardBody className="pt-0">
-            {mergedHistory.map(({ type, points, timestamp }, index) => (
-              <div key={index} className="flex items-start gap-4 py-3">
-                <div
-                  className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
-                    index === mergedHistory.length - 1
-                      ? "after:h-0"
-                      : "after:h-4/6"
-                  }`}
-                >
-                  {type === "added" ? (
-                    <PlusCircleIcon className="!h-5 !w-5 text-green-500" />
-                  ) : (
-                    <MinusCircleIcon className="!h-5 !w-5 text-blue-gray-500" />
-                  )}
-                </div>
-                <div>
-                  <Typography
-                    variant="small"
-                    color={type === "added" ? "green" : "blue-gray"}
-                    className="block font-medium"
+            {mergedHistory.length === 0 ? (
+              <Typography className="text-center text-sm font-semibold text-blue-gray-600">
+                No Data Available
+              </Typography>
+            ) : (
+              mergedHistory.map(({ type, points, timestamp }, index) => (
+                <div key={index} className="flex items-start gap-4 py-3">
+                  <div
+                    className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
+                      index === mergedHistory.length - 1
+                        ? "after:h-0"
+                        : "after:h-4/6"
+                    }`}
                   >
-                    {type === "added"
-                      ? `${points} points added`
-                      : `${points} points redeemed`}
-                  </Typography>
-                  <Typography
-                    as="span"
-                    variant="small"
-                    className="text-xs font-medium text-blue-gray-500"
-                  >
-                    {formatTimestamp(timestamp.toDate())}
-                  </Typography>
+                    {type === "added" ? (
+                      <PlusCircleIcon className="!h-5 !w-5 text-green-500" />
+                    ) : (
+                      <MinusCircleIcon className="!h-5 !w-5 text-blue-gray-500" />
+                    )}
+                  </div>
+                  <div>
+                    <Typography
+                      variant="small"
+                      color={type === "added" ? "green" : "blue-gray"}
+                      className="block font-medium"
+                    >
+                      {type === "added"
+                        ? `${points} points added`
+                        : `${points} points redeemed`}
+                    </Typography>
+                    <Typography
+                      as="span"
+                      variant="small"
+                      className="text-xs font-medium text-blue-gray-500"
+                    >
+                      {formatTimestamp(timestamp.toDate())}
+                    </Typography>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardBody>
         </Card>
       </div>

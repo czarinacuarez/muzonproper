@@ -21,6 +21,7 @@ import {
   DialogBody,
   DialogFooter,
   Textarea,
+  Alert,
 } from "@material-tailwind/react";
 import { useUser } from "../../context/AuthContext";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
@@ -46,17 +47,24 @@ import { useNavigate } from "react-router-dom";
 const TABLE_HEAD = ["Document Name", "Deadline", "Date", "Status", "Actions"];
 
 export function Redeem() {
-  const { user } = useUser();
-  const [open, setOpen] = React.useState(false);
+  const { user, userVerify } = useUser();
+  const [open, setOpenDialog] = React.useState(false);
   const [fileName, setFileName] = useState("");
   const [numPages, setNumPages] = useState(null);
   const [file, setFile] = useState(null);
   const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [alert, setAlert] = useState({ message: "", color: "" });
+  const [opened, setOpen] = useState(false);
+  const [minDateTime, setMinDateTime] = useState("");
 
   const moveRequest = (id) => {
     navigate(`/userdashboard/request/${id}`);
+  };
+
+  const answerSK = () => {
+    navigate(`/userdashboard/profiling/`);
   };
 
   const filteredRequests = requests.filter((request) =>
@@ -104,6 +112,12 @@ export function Redeem() {
     };
 
     fetchRequests();
+
+    const now = new Date();
+    const isoString = now.toISOString();
+    const formattedDateTime = isoString.slice(0, 16); // Truncate to match datetime-local format (YYYY-MM-DDTHH:MM)
+
+    setMinDateTime(formattedDateTime);
   }, [user]);
 
   const [formValues, setFormValues] = useState({
@@ -116,7 +130,17 @@ export function Redeem() {
     let formattedValue = value;
 
     if (name === "deadline") {
-      formattedValue = new Date(value);
+      const selectedDateTime = new Date(value);
+      const selectedHours = selectedDateTime.getHours();
+
+      // Check if the selected time is between 7 AM (07:00) and 5 PM (17:00)
+      if (selectedHours < 7 || selectedHours >= 17) {
+        // Reset the value or show a message if it's outside the allowed range
+        console.log("Please select a time between 7 AM and 5 PM.");
+        return;
+      }
+
+      formattedValue = selectedDateTime;
     }
 
     setFormValues({
@@ -247,10 +271,39 @@ export function Redeem() {
   const truncate = (str, max) =>
     str.length > max ? `${str.slice(0, max)}...` : str;
 
-  const handleOpen = () => setOpen(!open);
+  const handleOpen = () => {
+    if (!userVerify) {
+      setAlert({
+        message:
+          "Your account is not verified. Please verify your account to redeem rewards.",
+        color: "red",
+      });
+      setOpen(true); // Show the alert
+    } else {
+      setOpenDialog(!open);
+      console.log("Proceeding with redeeming reward...");
+    }
+  };
 
   return (
     <div className="mx-auto my-14 flex max-w-screen-lg flex-col gap-8">
+      <Alert
+        open={opened}
+        onClose={() => setOpen(false)}
+        color={alert.color}
+        className="mb-4"
+      >
+        <div className="items-center gap-5 md:flex ">
+          {alert.message || "A dismissible alert for showing message."}
+          <Button
+            onClick={() => answerSK()}
+            color="white"
+            className="my-2 md:my-0"
+          >
+            Verify Account
+          </Button>
+        </div>
+      </Alert>
       <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
@@ -297,8 +350,8 @@ export function Redeem() {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="mr-3 h-5 w-5"
+                    fill="green"
+                    className="mr-3 h-5 w-5 cursor-pointer"
                     onClick={handleOpen}
                   >
                     <path
@@ -313,7 +366,7 @@ export function Redeem() {
                     <Typography
                       className="-mt-7 mb-6 "
                       color="gray"
-                      variant="lead"
+                      variant="normal"
                     >
                       Insert the file (pdf) you want to be printed.
                     </Typography>
@@ -323,7 +376,7 @@ export function Redeem() {
                         type="file"
                         onChange={handleFileChange}
                         accept=".pdf"
-                        className="w-full cursor-pointer rounded bg-gray-100 text-sm font-medium text-gray-500 file:mr-4 file:cursor-pointer file:border-0 file:bg-gray-800 file:px-4 file:py-2 file:text-white file:hover:bg-gray-700"
+                        className="w-full cursor-pointer rounded bg-gray-100 text-sm font-medium text-gray-500 file:mr-4 file:cursor-pointer file:border-0 file:bg-green-500 file:px-4 file:py-2 file:text-white file:hover:bg-green-400"
                       />
                       {numPages !== null && (
                         <Typography variant="medium">
@@ -332,16 +385,28 @@ export function Redeem() {
                       )}
                     </div>
                     <Typography
-                      className="-mb-1 mb-2"
-                      color="blue-gray"
+                      className="my-4 -mb-1 mb-2"
+                      color="green"
                       variant="h6"
                     >
                       Expected Deadline
                     </Typography>
                     <Input
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const selectedDateTime = new Date(e.target.value);
+                        const selectedHours = selectedDateTime.getHours();
+
+                        // Check if the selected time is within 7 AM to 5 PM
+                        if (selectedHours < 7 || selectedHours > 17) {
+                          alert("Please select a time between 7 AM and 5 PM.");
+                          return;
+                        }
+
+                        handleInputChange(e); // Proceed with the rest of your change handling logic
+                      }}
                       name="deadline"
                       type="datetime-local"
+                      min={minDateTime}
                     />
                   </DialogBody>
                   <DialogFooter className="space-x-2">
@@ -351,7 +416,7 @@ export function Redeem() {
                     <Button
                       type="submit"
                       variant="gradient"
-                      color="gray"
+                      color="green"
                       onClick={handleOpen}
                     >
                       Send Request
@@ -363,7 +428,7 @@ export function Redeem() {
           </div>
         </CardHeader>
         <CardBody className="overflow-auto px-0">
-          <table className="w-full min-w-max table-auto text-left">
+          <table className="max-h-96 w-full min-w-max table-auto text-left">
             <thead>
               <tr>
                 {TABLE_HEAD.map((head) => (
@@ -384,71 +449,81 @@ export function Redeem() {
               </tr>
             </thead>
             <tbody>
-              {filteredRequests.map(
-                (
-                  {
-                    id,
-                    document_name,
-                    document_url,
-                    status,
-                    deadline,
-                    submissionDate,
-                  },
-                  index,
-                ) => {
-                  const isLast = index === requests.length - 1;
-                  const classes = isLast
-                    ? "p-4"
-                    : "p-4 border-b border-blue-gray-50";
+              {filteredRequests.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-3 text-center">
+                    <Typography className="text-sm font-semibold text-blue-gray-600">
+                      No Data Available
+                    </Typography>
+                  </td>
+                </tr>
+              ) : (
+                filteredRequests.map(
+                  (
+                    {
+                      id,
+                      document_name,
+                      document_url,
+                      status,
+                      deadline,
+                      submissionDate,
+                    },
+                    index,
+                  ) => {
+                    const isLast = index === requests.length - 1;
+                    const classes = isLast
+                      ? "p-4"
+                      : "p-4 border-b border-blue-gray-50";
 
-                  return (
-                    <tr key={id}>
-                      <td className={classes}>
-                        <Typography className="text-sm font-semibold text-blue-gray-600">
-                          {truncate(document_name, 25)}
-                        </Typography>
-                      </td>
-                      <td className={classes}>
-                        <Typography className="text-sm font-normal text-blue-gray-600">
-                          {formatTimestamp(deadline)}
-                        </Typography>
-                      </td>
-                      <td className={`${classes} hidden md:table-cell`}>
-                        <Typography className="text-sm font-normal text-blue-gray-600">
-                          {formatTimestamp(submissionDate)}
-                        </Typography>
-                      </td>
-                      <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            size="sm"
-                            variant="ghost"
-                            value={status}
-                            color={
-                              status === "received"
-                                ? "green"
-                                : status === "cancelled"
-                                ? "red"
-                                : status === "rejected"
-                                ? "red"
-                                : "amber"
-                            }
-                          />
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <Tooltip content="View Request">
-                          <IconButton
-                            variant="text"
-                            onClick={() => moveRequest(id)}
-                          >
-                            <EyeIcon className="h-4 w-4" />
-                          </IconButton>
-                        </Tooltip>
-                      </td>
-                    </tr>
-                  );
-                },
+                    return (
+                      <tr key={id}>
+                        <td className={classes}>
+                          <Typography className="text-sm font-semibold text-blue-gray-600">
+                            {truncate(document_name, 25)}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography className="text-sm font-normal text-blue-gray-600">
+                            {formatTimestamp(deadline)}
+                          </Typography>
+                        </td>
+                        <td className={`${classes} hidden md:table-cell`}>
+                          <Typography className="text-sm font-normal text-blue-gray-600">
+                            {formatTimestamp(submissionDate)}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <div className="w-max">
+                            <Chip
+                              size="sm"
+                              variant="ghost"
+                              value={status}
+                              color={
+                                status === "received"
+                                  ? "green"
+                                  : status === "cancelled"
+                                  ? "red"
+                                  : status === "rejected"
+                                  ? "red"
+                                  : "amber"
+                              }
+                            />
+                          </div>
+                        </td>
+                        <td className={classes}>
+                          <Tooltip content="View Request">
+                            <IconButton
+                              variant="text"
+                              onClick={() => moveRequest(id)}
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </IconButton>
+                          </Tooltip>
+                        </td>
+                      </tr>
+                    );
+                  },
+                )
               )}
             </tbody>
           </table>

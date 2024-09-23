@@ -403,7 +403,7 @@ export function Home() {
               </MenuList> */}
             </Menu>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+          <CardBody className="overflow-x-auto px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>

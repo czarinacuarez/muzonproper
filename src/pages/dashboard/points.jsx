@@ -14,9 +14,10 @@ import {
   CardFooter,
   IconButton,
   Tooltip,
+  Avatar,
 } from "@material-tailwind/react";
 import { useUser } from "@/context/AuthContext";
-import { collection, query, onSnapshot } from "firebase/firestore";
+import { collection, query, onSnapshot, getDoc, doc } from "firebase/firestore";
 import { FirebaseFirestore } from "@/firebase";
 import { useNavigate } from "react-router-dom";
 // Set up the worker path
@@ -25,7 +26,7 @@ import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 // Set up the worker path to your local file
 GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-const TABLE_HEAD = ["Transaction", "Points", "Date", "Status", "Actions"];
+const TABLE_HEAD = ["User", "Points", "Date", "Transaction", "Actions"];
 
 const PDFViewer = ({ file }) => {
   const [pdf, setPdf] = useState(null);
@@ -122,7 +123,7 @@ export function PointsHistory() {
   };
 
   const moveRequest = (id) => {
-    navigate(`/userdashboard/request/${id}`);
+    navigate(`/dashboard/request/${id}`);
   };
 
   const handleFileChange = async (event) => {
@@ -162,54 +163,89 @@ export function PointsHistory() {
   };
 
   useEffect(() => {
-    // Reference to pointsAddedHistory collection
     const pointsAddedQuery = query(
       collection(FirebaseFirestore, "pointsAddedHistory"),
     );
-
-    // Reference to pointsReductionHistory collection
     const pointsReductionQuery = query(
       collection(FirebaseFirestore, "pointsReductionHistory"),
     );
 
-    const unsubscribeAdded = onSnapshot(pointsAddedQuery, (snapshot) => {
-      const addedPoints = snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        type: "added",
-        id: doc.id,
-        points: doc.data().points,
-      }));
+    const fetchUserData = async (userId) => {
+      try {
+        const userDocRef = doc(FirebaseFirestore, "users", userId);
+        const userDoc = await getDoc(userDocRef);
+
+        // Check if user data exists and has the expected fields
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          return {
+            firstName: userData.firstname || "Unknown",
+            lastName: userData.lastname || "User",
+            email: userData.email || "loading",
+          };
+        } else {
+          console.warn(`User with ID ${userId} does not exist.`);
+          return { firstName: "Unknown", lastName: "User" };
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        return { firstName: "Unknown", lastName: "User" };
+      }
+    };
+
+    const unsubscribeAdded = onSnapshot(pointsAddedQuery, async (snapshot) => {
+      const addedPoints = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const data = doc.data();
+          const user = await fetchUserData(data.userId);
+
+          return {
+            ...data,
+            type: "added",
+            id: doc.id,
+            points: data.points,
+            user,
+          };
+        }),
+      );
 
       setMergedHistory((prev) => {
         const updated = [...prev, ...addedPoints];
         const unique = Array.from(
           new Map(updated.map((item) => [item.id, item])).values(),
         );
-        return unique.sort((a, b) => b.timestamp - a.timestamp);
+        return unique.sort((a, b) => b.timestamp - a.timestamp); // Ensure correct sorting
       });
     });
 
     const unsubscribeReduction = onSnapshot(
       pointsReductionQuery,
-      (snapshot) => {
-        const reducedPoints = snapshot.docs.map((doc) => ({
-          ...doc.data(),
-          type: "reduced",
-          id: doc.id,
-          points: doc.data().points_deducted,
-        }));
+      async (snapshot) => {
+        const reducedPoints = await Promise.all(
+          snapshot.docs.map(async (doc) => {
+            const data = doc.data();
+            const user = await fetchUserData(data.userId);
+
+            return {
+              ...data,
+              type: "reduced",
+              id: doc.id,
+              points: data.points_deducted,
+              user,
+            };
+          }),
+        );
 
         setMergedHistory((prev) => {
           const updated = [...prev, ...reducedPoints];
           const unique = Array.from(
             new Map(updated.map((item) => [item.id, item])).values(),
           );
-          return unique.sort((a, b) => b.timestamp - a.timestamp);
+          return unique.sort((a, b) => b.timestamp - a.timestamp); // Ensure correct sorting
         });
       },
     );
 
-    // Cleanup on unmount
     return () => {
       unsubscribeAdded();
       unsubscribeReduction();
@@ -217,39 +253,23 @@ export function PointsHistory() {
   }, []);
 
   return (
-    <div className="mx-auto my-14 flex max-w-screen-lg flex-col gap-8">
+    <div className="mx-auto my-14 flex max-w-screen-xl flex-col gap-8">
       <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
-              <Typography variant="h6" color="blue-gray">
+              <Typography variant="h5" color="green">
                 Points History
               </Typography>
-              <Typography
-                color="gray"
-                variant="small"
-                className="mt-1 font-normal"
-              >
-                These are the details regarding with user's points transaction
+              <Typography color="gray" className="mt-1 font-normal">
+                These are the details regarding the user's points transaction
                 history.
               </Typography>
             </div>
-            <div className="flex w-full shrink-0 gap-2 md:w-max">
-              {/* <div className="w-full md:w-72">
-                <Input
-                  label="Search"
-                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                />
-              </div>
-              <Button className="flex items-center gap-3" size="sm">
-                <ArrowDownTrayIcon strokeWidth={2} className="h-4 w-4" /> Send
-                Request
-              </Button> */}
-            </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
-          <table className="w-full min-w-max table-auto text-left">
+        <CardBody className="max-h-96 overflow-auto  px-0">
+          <table className=" w-full min-w-max table-auto text-left">
             <thead>
               <tr>
                 {TABLE_HEAD.map((head) => (
@@ -269,59 +289,100 @@ export function PointsHistory() {
             </thead>
             <tbody>
               {mergedHistory.map(
-                ({ type, points, timestamp, id, transactionId }, index) => {
+                (
+                  {
+                    type,
+                    points,
+                    smallBottles,
+                    bigBottles,
+                    timestamp,
+                    id,
+                    transactionId,
+                    user,
+                  },
+                  index,
+                ) => {
                   const isLast = index === mergedHistory.length - 1;
                   const classes = isLast
                     ? "p-4"
                     : "p-4 border-b border-blue-gray-50";
+                  const userName = user
+                    ? `${user.firstName} ${user.lastName}`
+                    : "Unknown User";
+
+                  const email = user.email;
 
                   return (
                     <tr key={id}>
                       <td className={classes}>
-                        <div className="flex items-center gap-2">
-                          {type === "added" ? "Points Added" : "Points Reduced"}
+                        <div className="flex items-center gap-4">
+                          <Avatar
+                            src="/images/unknown.jpg"
+                            size="sm"
+                            variant="rounded"
+                          />
+                          <div>
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-semibold"
+                            >
+                              {userName}
+                            </Typography>
+                            <Typography className="overflow-hidden truncate whitespace-nowrap text-xs font-normal text-blue-gray-500">
+                              {email}
+                            </Typography>
+                          </div>
                         </div>
                       </td>
+
                       <td className={classes}>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
+                        <Typography className="text-center text-sm font-normal text-blue-gray-600">
                           {points}
                         </Typography>
                       </td>
                       <td className={classes}>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
+                        <Typography className="text-sm font-normal text-blue-gray-600">
                           {formatTimestamp(timestamp)}
                         </Typography>
                       </td>
                       <td className={classes}>
-                        <Chip
-                          value={type === "added" ? "Added" : "Reduced"}
-                          color={type === "added" ? "green" : "red"}
-                        />
+                        <div className="w-max">
+                          <Chip
+                            size="sm"
+                            variant="ghost"
+                            value={type}
+                            color={type === "added" ? "green" : "red"}
+                          />
+                        </div>
                       </td>
                       <td className={classes}>
-                        <div className="flex items-center gap-2">
-                          <Tooltip content="View Document" placement="top">
+                        <Tooltip content="View Transaction">
+                          {type === "added" ? (
                             <IconButton
                               onClick={() =>
-                                handleOpen("lg", {
+                                handleOpen("xs", {
                                   type,
-                                  fileName: transactionId, // or any other relevant identifier
+                                  points,
+                                  timestamp,
+                                  id,
+                                  smallBottles,
+                                  bigBottles,
                                 })
                               }
+                              variant="text"
                             >
-                              <EyeIcon className="h-5 w-5" />
+                              <EyeIcon className="h-4 w-4" />
                             </IconButton>
-                          </Tooltip>
-                          {/* Add more actions if needed */}
-                        </div>
+                          ) : (
+                            <IconButton
+                              onClick={() => moveRequest(transactionId)}
+                              variant="text"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </IconButton>
+                          )}
+                        </Tooltip>
                       </td>
                     </tr>
                   );
@@ -331,14 +392,91 @@ export function PointsHistory() {
           </table>
         </CardBody>
       </Card>
-      <Dialog open={size === "lg"} size="lg" handler={() => handleOpen(null)}>
-        <DialogHeader>Document Preview</DialogHeader>
+      <Dialog
+        open={
+          size === "xs" ||
+          size === "sm" ||
+          size === "md" ||
+          size === "lg" ||
+          size === "xl" ||
+          size === "xxl"
+        }
+        size={size || "md"}
+        handler={handleOpen}
+      >
+        <DialogHeader>
+          <Typography variant="h5" color="green">
+            Bottle Insertion
+          </Typography>
+        </DialogHeader>
         <DialogBody>
-          <PDFViewer file={file} />
+          <Card className="pt-4">
+            <CardHeader variant="gradient" color="green" className="mb-8 p-6">
+              <Typography variant="h6" color="white">
+                Transaction Details
+              </Typography>
+            </CardHeader>
+            <CardBody className="px-6 pb-6 pt-0">
+              <div className="">
+                <table className="w-full min-w-[640px] table-auto text-left">
+                  <thead></thead>
+                  <tbody>
+                    {selectedTransaction ? (
+                      <tr>
+                        <td colSpan="3">
+                          <div className="space-y-2 text-sm">
+                            <p>
+                              <strong className="text-gray-700">Id:</strong>{" "}
+                              {selectedTransaction.id}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">Date:</strong>{" "}
+                              {formatTimestamp(selectedTransaction.timestamp)}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Small Bottles:
+                              </strong>{" "}
+                              {selectedTransaction.smallBottles}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Big Bottles:
+                              </strong>{" "}
+                              {selectedTransaction.bigBottles}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Total Points:
+                              </strong>{" "}
+                              {selectedTransaction.points}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="py-4 text-center text-gray-500"
+                        >
+                          No transaction data available.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardBody>
+          </Card>
         </DialogBody>
         <DialogFooter>
-          <Button variant="text" color="blue" onClick={() => handleOpen(null)}>
-            Close
+          <Button
+            variant="gradient"
+            color="green"
+            onClick={() => handleOpen(null)}
+          >
+            <span>Ok</span>
           </Button>
         </DialogFooter>
       </Dialog>
