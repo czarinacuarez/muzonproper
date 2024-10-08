@@ -244,7 +244,16 @@ export function EditUserPoints() {
                                 </td>
                                 <td className={classes}>
                                 <Typography variant="small" color="blue-gray" className="font-normal">
-                                    {pointData.updatedAt ? pointData.updatedAt.toDate().toLocaleString() : "N/A"}
+                                    {pointData.updatedAt ? 
+                                        pointData.updatedAt.toDate().toLocaleString("en-US", { 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric', 
+                                            hour: 'numeric', 
+                                            minute: 'numeric', 
+                                            hour12: true 
+                                        }) 
+                                        : "N/A"}
                                 </Typography>
                                 </td>
                                 <td className={classes}>
