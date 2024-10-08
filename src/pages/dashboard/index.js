@@ -7,3 +7,4 @@ export * from "@/pages/dashboard/reports";
 export * from "@/pages/dashboard/registeredusers";
 export * from "@/pages/dashboard/request";
 export * from "@/pages/dashboard/account";
+export * from "@/pages/dashboard/EditUserPoints";

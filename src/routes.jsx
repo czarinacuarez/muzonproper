@@ -19,6 +19,7 @@ import {
   Transactions,
   Reports,
   RegisteredUsers,
+  EditUserPoints,
   Request,
   Accounts,
 } from "@/pages/dashboard";
@@ -61,6 +62,12 @@ export const routes = [
         name: "User Management",
         path: "/users",
         element: <RegisteredUsers />,
+      },
+      {
+        icon: <UserGroupIcon {...icon} />,
+        name: "Points Management",
+        path: "/edit_points",
+        element: <EditUserPoints />,
       },
       // {
       //   icon: <UserCircleIcon {...icon} />,
