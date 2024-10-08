@@ -2,7 +2,7 @@ import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 import {
-  PencilIcon,
+  PlusIcon,
 } from "@heroicons/react/24/solid";
 import {
   Card,
@@ -145,14 +145,14 @@ export function EditUserPoints() {
             <Card className="mx-auto w-full max-w-[24rem]">
                 <CardBody className="flex flex-col gap-4">
                     <Typography variant="h4" color="blue-gray">
-                        Update
+                        Add Points
                     </Typography>
                     <Typography
                         className="mb-3 font-normal"
                         variant="paragraph"
                         color="gray"
                         >
-                        Update user points.
+                        Add user points.
                     </Typography>
                     <Typography className="-mb-2" variant="h6">
                         Big Bottles
@@ -253,7 +253,7 @@ export function EditUserPoints() {
                                         setUserId(pointData.id); // Set the user ID when clicked
                                         handleOpen();
                                     }}>
-                                    <PencilIcon className="h-4 w-4"/>
+                                    <PlusIcon className="h-4 w-4"/>
                                     </IconButton>
                                 </Tooltip>
                                 </td>
