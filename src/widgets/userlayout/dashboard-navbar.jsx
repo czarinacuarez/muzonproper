@@ -176,10 +176,10 @@ export function DashboardNavbar() {
               <Button
                 variant="text"
                 color="blue-gray"
-                className="hidden items-center gap-1 px-4 normal-case xl:flex"
+                className="flex items-center gap-1 px-4 normal-case xl:flex"
               >
                 <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-                <span className="xs:hidden">{userInfo?.firstname}</span>
+                <span className="hidden md:block">{userInfo?.firstname}</span>
               </Button>
             </MenuHandler>
             <MenuList className="w-max border-0">
@@ -188,7 +188,7 @@ export function DashboardNavbar() {
                 className="flex items-center gap-3"
               >
                 <div className="grid place-items-center rounded-full bg-gradient-to-tr">
-                  <UserIcon className="h-6 w-6 text-black/70" />
+                  <UserCircleIcon className="h-6 w-6 text-black/70" />
                 </div>
                 <div>
                   <Typography
@@ -248,56 +248,7 @@ export function DashboardNavbar() {
                 )}
               </IconButton>
             </MenuHandler>
-            <MenuList className="w-max border-0">
-              {/* <MenuItem className="flex items-center gap-3">
-                <Avatar
-                  src="https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg"
-                  alt="item-1"
-                  size="sm"
-                  variant="circular"
-                />
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal"
-                  >
-                    <strong>New message</strong> from Laur
-                  </Typography>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
-                  >
-                    <ClockIcon className="h-3.5 w-3.5" /> 13 minutes ago
-                  </Typography>
-                </div>
-              </MenuItem>
-              <MenuItem className="flex items-center gap-4">
-                <Avatar
-                  src="https://demos.creative-tim.com/material-dashboard/assets/img/small-logos/logo-spotify.svg"
-                  alt="item-1"
-                  size="sm"
-                  variant="circular"
-                />
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal"
-                  >
-                    <strong>New album</strong> by Travis Scott
-                  </Typography>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
-                  >
-                    <ClockIcon className="h-3.5 w-3.5" /> 1 day ago
-                  </Typography>
-                </div>
-              </MenuItem> */}
-
+            <MenuList className="max-h-72 border-0 shadow-2xl sm:w-96 lg:w-auto w-96">
               {notifications.length > 0 ? (
                 notifications.map((notification) => (
                   <MenuItem
@@ -344,6 +295,7 @@ export function DashboardNavbar() {
                         <ClockIcon className="h-3.5 w-3.5" />{" "}
                         {formatTimestamp(notification.timestamp)}
                       </Typography>
+
                     </div>
                     <HeartIcon
                       className={`h-4 h-4 rounded-full ${
@@ -353,11 +305,20 @@ export function DashboardNavbar() {
                   </MenuItem>
                 ))
               ) : (
-                <Typography
-                  variant="small"
-                  color="blue-gray"
-                  className="font-normal"
-                ></Typography>
+                <div className="mx-6">
+                  <div className="m-2 flex justify-center items-center">
+                    <div className="p-4 rounded-full bg-green-200">
+                      <BellIcon className=" h-16 w-16 text-blue-gray-500 mx-auto" />
+                    </div>
+                  </div>
+                  <Typography
+                    variant="large"
+                    color="blue-gray"
+                    className="font-bold text-center"
+                  >
+                    No Notifications
+                  </Typography>
+                </div>
               )}
               {/* <MenuItem className="flex items-center gap-4">
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-tr from-blue-gray-800 to-blue-gray-900">

@@ -35,14 +35,14 @@ export function Sidenav({ brandImg, brandName, routes }) {
           <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
         </IconButton>
 
-        <Link to="/" className="px-8 py-6 text-center">
+        {/* <Link to="/" className="px-8 py-6 text-center"> */}
           {/* <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
             MuzonEcoSave
           </Typography> */}
-        </Link>
+        {/* </Link> */}
         <IconButton
           variant="text"
           color="white"
