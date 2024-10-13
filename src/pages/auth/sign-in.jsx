@@ -67,9 +67,11 @@ export function SignIn() {
     <section className="flex h-screen gap-4 p-8">
       <div className="mx-auto my-auto w-full lg:w-3/5">
         <div className="text-center">
-          <div className="flex justify-center gap-2">
-            <img className="h-12 w-12" src="/img/meslogo.png"></img>
-            <Typography variant="h2" color="green" className="mb-4 font-bold">
+          <div className="flex justify-center items-center mb-2">
+            <div className="h-16 w-16">
+              <img className="h-full w-full" src="/img/MuzonEcoSaveLogo.png"></img>
+            </div>
+            <Typography variant="h2" color="green" className="font-bold">
               MuzonEcoSave
             </Typography>
           </div>
