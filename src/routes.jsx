@@ -10,6 +10,7 @@ import {
   UserGroupIcon,
   EyeDropperIcon,
   PrinterIcon,
+  CircleStackIcon,
 } from "@heroicons/react/24/solid";
 import {
   Home,
@@ -64,7 +65,7 @@ export const routes = [
         element: <RegisteredUsers />,
       },
       {
-        icon: <UserGroupIcon {...icon} />,
+        icon: <CircleStackIcon {...icon} />,
         name: "Points Management",
         path: "/edit_points",
         element: <EditUserPoints />,

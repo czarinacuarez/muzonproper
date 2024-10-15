@@ -248,7 +248,7 @@ export function DashboardNavbar() {
                 )}
               </IconButton>
             </MenuHandler>
-            <MenuList className="max-h-72 border-0 shadow-2xl sm:w-96 lg:w-auto w-96">
+            <MenuList className="max-h-72 w-96 border-0 shadow-2xl sm:w-96 lg:w-auto">
               {notifications.length > 0 ? (
                 notifications.map((notification) => (
                   <MenuItem
@@ -295,7 +295,6 @@ export function DashboardNavbar() {
                         <ClockIcon className="h-3.5 w-3.5" />{" "}
                         {formatTimestamp(notification.timestamp)}
                       </Typography>
-
                     </div>
                     <HeartIcon
                       className={`h-4 h-4 rounded-full ${
@@ -306,15 +305,15 @@ export function DashboardNavbar() {
                 ))
               ) : (
                 <div className="mx-6">
-                  <div className="m-2 flex justify-center items-center">
-                    <div className="p-4 rounded-full bg-green-200">
-                      <BellIcon className=" h-16 w-16 text-blue-gray-500 mx-auto" />
+                  <div className="m-2 flex items-center justify-center">
+                    <div className="rounded-full bg-green-200 p-4">
+                      <BellIcon className=" mx-auto h-16 w-16 text-blue-gray-500" />
                     </div>
                   </div>
                   <Typography
                     variant="large"
                     color="blue-gray"
-                    className="font-bold text-center"
+                    className="text-center font-bold"
                   >
                     No Notifications
                   </Typography>

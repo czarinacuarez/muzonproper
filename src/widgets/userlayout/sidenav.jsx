@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
-import { Bars3Icon } from "@heroicons/react/24/solid";
+import { Bars3Icon, XCircleIcon } from "@heroicons/react/24/solid";
 import {} from "@/context";
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -29,14 +29,14 @@ export function Sidenav({ brandImg, brandName, routes }) {
         <IconButton
           variant="text"
           color="blue-gray"
-          className="grid xl:hidden"
+          className="m-2 grid xl:hidden"
           onClick={() => setOpenSidenav(dispatch, !openSidenav)}
         >
-          <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
+          <XCircleIcon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
         </IconButton>
 
         {/* <Link to="/" className="px-8 py-6 text-center"> */}
-          {/* <Typography
+        {/* <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
