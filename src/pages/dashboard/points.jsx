@@ -426,7 +426,9 @@ export function PointsHistory() {
                         <td colSpan="3">
                           <div className="space-y-2 text-sm">
                             <p>
-                              <strong className="text-gray-700">Id:</strong>{" "}
+                              <strong className="text-gray-700">
+                                Transaction ID:
+                              </strong>{" "}
                               {selectedTransaction.id}
                             </p>
                             <p>
@@ -444,6 +446,29 @@ export function PointsHistory() {
                                 Big Bottles:
                               </strong>{" "}
                               {selectedTransaction.bigBottles}
+                            </p>
+
+                            <p>
+                              <strong className="text-gray-700">
+                                Total Bottles:
+                              </strong>{" "}
+                              {selectedTransaction.smallBottles +
+                                selectedTransaction.bigBottles}
+                            </p>
+                            <p>
+                              <strong className="text-gray-700">
+                                Small Bottles Points:
+                              </strong>{" "}
+                              {selectedTransaction.smallBottles} * {3} ={" "}
+                              {selectedTransaction.smallBottles * 3}
+                            </p>
+
+                            <p>
+                              <strong className="text-gray-700">
+                                Big Bottles Points:
+                              </strong>{" "}
+                              {selectedTransaction.bigBottles} * {5} ={" "}
+                              {selectedTransaction.bigBottles * 5}
                             </p>
                             <p>
                               <strong className="text-gray-700">

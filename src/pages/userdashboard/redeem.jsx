@@ -52,6 +52,7 @@ export function Redeem() {
   const [fileName, setFileName] = useState("");
   const [numPages, setNumPages] = useState(null);
   const [file, setFile] = useState(null);
+  const [points, setPoints] = useState(null); // State to store user points
   const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -105,6 +106,16 @@ export function Redeem() {
           setRequests(fetchedRequests);
         });
 
+        // Fetch user points
+        const userPointsRef = doc(FirebaseFirestore, "userPoints", user.uid);
+        const docSnap = await getDoc(userPointsRef);
+
+        if (docSnap.exists()) {
+          setPoints(docSnap.data().points); // Assuming 'points' field in the document
+        } else {
+          console.log("No user points document found!");
+        }
+
         return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching requests:", error);
@@ -133,12 +144,12 @@ export function Redeem() {
       const selectedDateTime = new Date(value);
       const selectedHours = selectedDateTime.getHours();
 
-      // Check if the selected time is between 7 AM (07:00) and 5 PM (17:00)
-      if (selectedHours < 7 || selectedHours >= 17) {
-        // Reset the value or show a message if it's outside the allowed range
-        console.log("Please select a time between 7 AM and 5 PM.");
-        return;
-      }
+      // // Check if the selected time is between 7 AM (07:00) and 5 PM (17:00)
+      // if (selectedHours < 7 || selectedHours >= 17) {
+      //   // Reset the value or show a message if it's outside the allowed range
+      //   console.log("Please select a time between 7 AM and 5 PM.");
+      //   return;
+      // }
 
       formattedValue = selectedDateTime;
     }
@@ -279,6 +290,13 @@ export function Redeem() {
         color: "red",
       });
       setOpen(true); // Show the alert
+    } else if (points <= 0) {
+      setAlert({
+        message:
+          "Your account has insufficient points or a zero balance. Add points first before making request.",
+        color: "red",
+      });
+      setOpen(true);
     } else {
       setOpenDialog(!open);
       console.log("Proceeding with redeeming reward...");
@@ -295,13 +313,15 @@ export function Redeem() {
       >
         <div className="items-center gap-5 md:flex ">
           {alert.message || "A dismissible alert for showing message."}
-          <Button
-            onClick={() => answerSK()}
-            color="white"
-            className="my-2 md:my-0"
-          >
-            Verify Account
-          </Button>
+          {points > 0 && (
+            <Button
+              onClick={() => answerSK()}
+              color="white"
+              className="my-2 md:my-0"
+            >
+              Verify Account
+            </Button>
+          )}
         </div>
       </Alert>
       <Card className="h-full w-full border border-blue-gray-100 shadow-sm">
